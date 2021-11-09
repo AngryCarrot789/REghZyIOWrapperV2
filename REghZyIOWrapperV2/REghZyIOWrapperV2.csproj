@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{9F51F210-A220-4095-89D6-4AC685B97782}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>REghZyIOWrapperV2</RootNamespace>
+    <AssemblyName>REghZyIOWrapperV2</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Connections\BaseConnection.cs" />
+    <Compile Include="Connections\SerialConnection.cs" />
+    <Compile Include="Connections\ThreadConnection.cs" />
+    <Compile Include="PacketConnections\DataConnection.cs" />
+    <Compile Include="PacketConnections\SerialDataConnection.cs" />
+    <Compile Include="PacketConnections\SerialDevice.cs" />
+    <Compile Include="Packeting\Listeners\FilteredPacketListener.cs" />
+    <Compile Include="Packeting\Listeners\Filters\PacketFilter.cs" />
+    <Compile Include="Packeting\Listeners\Filters\PacketIDFilter.cs" />
+    <Compile Include="Packeting\Listeners\Filters\PacketPredicateFilter.cs" />
+    <Compile Include="Packeting\Listeners\GenericPacketListener.cs" />
+    <Compile Include="Packeting\Listeners\IPacketListener.cs" />
+    <Compile Include="Packeting\PacketImplementation.cs" />
+    <Compile Include="Packeting\PacketSystem.cs" />
+    <Compile Include="Packeting\Packets\Packet1LongData.cs" />
+    <Compile Include="Packeting\Packets\Packet.cs" />
+    <Compile Include="Packeting\Packets\Packet2YourInfo.cs" />
+    <Compile Include="Packeting\SerialPacketSystem.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Streams\BlockingStream.cs" />
+    <Compile Include="Streams\DataInputStream.cs" />
+    <Compile Include="Streams\DataOutputStream.cs" />
+    <Compile Include="Streams\IDataInput.cs" />
+    <Compile Include="Streams\IDataOutput.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Packets\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
