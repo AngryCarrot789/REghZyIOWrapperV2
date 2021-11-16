@@ -1,6 +1,10 @@
 # REghZyIOWrapperV2
 A more efficient of another thing i made, that uses raw data in the packets, rather than formatted strings. Also containing ACK packets 
 
+# Demo :)
+
+![](devenv_2021-11-16_10.39.32.png)
+
 ## This repo also contains 2 classes that i made: DataInputStream, and DataOutputStream :)
 
 These allow you to read and write primitive data types (e.g WriteByte(), WriteLong(), etc)
