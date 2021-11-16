@@ -1,6 +1,4 @@
-﻿using REghZyIOWrapperV2.Packeting.Packets;
-
-namespace REghZyIOWrapperV2.Packeting.Handling {
+﻿namespace REghZyIOWrapperV2.Packeting.Handling {
     /// <summary>
     /// An interface for a packet handler
     /// </summary>

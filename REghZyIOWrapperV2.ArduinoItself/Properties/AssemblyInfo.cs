@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("REghZyIOWrapperV2.Server")]
+[assembly: AssemblyTitle("REghZyIOWrapperV2.ArduinoItself")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("REghZyIOWrapperV2.Server")]
+[assembly: AssemblyProduct("REghZyIOWrapperV2.ArduinoItself")]
 [assembly: AssemblyCopyright("Copyright ©  2021")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("e81a8dde-bb30-43e6-a14c-743e98cb64cc")]
+[assembly: Guid("f370846b-72b1-4d49-819d-ed502c6b3a15")]
 
 // Version information for an assembly consists of the following four values:
 //

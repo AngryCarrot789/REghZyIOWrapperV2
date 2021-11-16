@@ -24,12 +24,16 @@ namespace REghZyIOWrapperV2.Connections.Serial {
         }
 
         public override void Disconnect() {
+            this.port.DiscardInBuffer();
+            this.port.DiscardOutBuffer();
             this.port.Close();
             this.stream = null;
         }
 
         public override void Dispose() {
             base.Dispose();
+            this.port.DiscardInBuffer();
+            this.port.DiscardOutBuffer();
             this.port.Close();
             this.port.Dispose();
         }

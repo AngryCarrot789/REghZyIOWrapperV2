@@ -1,5 +1,4 @@
 ﻿using System;
-using REghZyIOWrapperV2.Packeting.Packets;
 
 namespace REghZyIOWrapperV2.Packeting.Handling {
     public class GenericListener<T> : IListener where T : Packet {

@@ -1,6 +1,4 @@
-﻿using REghZyIOWrapperV2.Packeting.Packets;
-
-namespace REghZyIOWrapperV2.Packeting.Handling {
+﻿namespace REghZyIOWrapperV2.Packeting.Handling {
     public interface IListener {
         /// <summary>
         /// Called when the given packet is received

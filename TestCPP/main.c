@@ -55,5 +55,5 @@ byte peek() {
 int main() {
 	setup();
 
-	Packet01* pkt = reinterpret_cast<Packet01*>(read_buffer);
+	// Packet01* pkt = reinterpret_cast<Packet01*>(read_buffer);
 }

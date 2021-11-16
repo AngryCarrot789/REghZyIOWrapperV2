@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace REghZyIOWrapperV2.Packeting.ACK {
@@ -17,6 +18,8 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
         }
 
         public bool Put(uint key) {
+            Debug.Assert(key != 0, "Key cannot be 0, it must be 1 or above");
+
             if (key > this.highest) {
                 this.highest = key;
             }
@@ -100,6 +103,8 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
         }
 
         public bool HasKey(uint key) {
+            Debug.Assert(key != 0, "Key cannot be 0, it must be 1 or above");
+
             if (key > this.highest) {
                 return false;
             }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using REghZyIOWrapperV2.Packeting.Exceptions;
-using REghZyIOWrapperV2.Packeting.Packets;
 using REghZyIOWrapperV2.Streams;
 
 namespace REghZyIOWrapperV2.Packeting.ACK {
@@ -181,7 +181,7 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
                     return ack;
                 }
                 else {
-                    throw new PacketCreationFailure("Destination code was not to the client, a client acknowledgement, or to the server");
+                    throw new PacketCreationFailure($"Invalid ACK DestinationCode '{code}' (ID = {id}, Len = {length}, Key = {key}, Full data = {keyAndDestination})");
                 }
             });
         }
@@ -193,11 +193,12 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
         public sealed override void Write(IDataOutput output) {
             DestinationCode code = this.Destination;
             if (code == DestinationCode.ClientACK) {
-                throw new ACKException("Attempted to write a client ACK packet (Packet should've been recreated using the DestinationCode.ToServer code)");
+                throw new ACKException("Attempted to write ClientACK packet (Packet should've been recreated using the DestinationCode.ToServer code)");
             }
 
             if (code == DestinationCode.ToClient || code == DestinationCode.ToServer) {
-                output.WriteInt((uint) ((this.Key << 3) | ((uint) code)));
+                // always assuming the key is smaller than IDEMPOTENCY_MAX
+                output.WriteInt((this.Key << 3) | ((uint) code));
                 if (code == DestinationCode.ToClient) {
                     WriteToClient(output);
                 }

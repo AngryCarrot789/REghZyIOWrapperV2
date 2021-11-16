@@ -1,6 +1,13 @@
-﻿using REghZyIOWrapperV2.Streams;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using REghZyIOWrapperV2.Packeting;
+using REghZyIOWrapperV2.Packeting.ACK;
+using REghZyIOWrapperV2.Streams;
 
-namespace REghZyIOWrapperV2.Packeting.ACK {
+namespace REghZyIOWrapperV2.Arduino.Packets {
     [PacketImplementation]
     public class Packet3HardwareInfo : PacketACK {
         public enum HardwareInfos : byte {
@@ -20,7 +27,7 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
         static Packet3HardwareInfo() {
             RegisterACKPacket<Packet3HardwareInfo>(3, (c, key, input, len) => {
                 return new Packet3HardwareInfo(input.ReadEnum8<HardwareInfos>());
-            }, (c, key, input, len) => { 
+            }, (c, key, input, len) => {
                 return new Packet3HardwareInfo(input.ReadEnum8<HardwareInfos>(), PacketUtils.ReadStringWL(input));
             });
         }
