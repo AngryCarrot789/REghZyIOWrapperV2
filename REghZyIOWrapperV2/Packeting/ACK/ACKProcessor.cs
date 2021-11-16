@@ -8,6 +8,13 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
     /// <summary>
     /// A helper class for managing ACK packets (aka packets that can be sent, and 
     /// then receive the same packet (but with extra "details") back)
+    /// 
+    /// <para>
+    /// From the code point of view, <see cref="DestinationCode.ToClient"/> is not us, we are the server.
+    /// </para>
+    /// <para>
+    /// <see cref="DestinationCode.ToServer"/> is us, and any packet that sends in that direction will usually contain data
+    /// </para>
     /// </summary>
     /// <typeparam name="T">The type of ACK packet</typeparam>
     public abstract class ACKProcessor<T> where T : PacketACK {
@@ -38,14 +45,27 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
         /// </summary>
         /// <param name="packet"></param>
         private bool OnPacketReceived(T packet) {
+            // acknowledgement
             if (packet.Destination == DestinationCode.ClientACK) {
-                // acknowledgement
+                // We are the client, so process the data
                 return OnProcessPacketToClientACK(packet);
             }
             else if (packet.Destination == DestinationCode.ToServer) {
-                // contains actual info
+                // client sent the data back to us
+                if (PacketACK.IsHandled(packet)) {
+                    // dont handle the packet again
+                    return true;
+                }
+
+                // packet contains actual good information!!! 
                 this.LastReceivedPacket[packet.Key] = packet;
-                return OnProcessPacketToServer(packet);
+                if (OnProcessPacketToServer(packet)) {
+                    PacketACK.SetHandled(packet);
+                    return true;
+                }
+                else {
+                    return false;
+                }
             }
             else {
                 // bug???
@@ -70,7 +90,7 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
         }
 
         /// <summary>
-        /// Sends the given packet to the connection (simply runs <see cref="PacketSystem.SendPacket(Packet)"/>
+        /// Sends the given packet to the connection (simply runs <see cref="Packeting.PacketSystem.SendPacket(Packets.Packet)"/> )
         /// </summary>
         /// <param name="packet"></param>
         public void SendPacket(T packet) {
@@ -86,8 +106,8 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
         /// </para>
         /// </summary>
         /// <returns>
-        /// <see langword="true"/> if the packet is fully handled, and should't be sent anywhere else (see <see cref="REghZyIOWrapperV2.Packeting.Handling.IHandler.Handle(Packets.Packet)"/>),
-        /// <see langword="false"/> if the packet shouldn't be handled, and could possibly be sent to other handlers/listeners
+        /// <see langword="true"/> if the packet is fully handled, and should't be sent anywhere else (see <see cref="IHandler.Handle(Packets.Packet)"/>),
+        /// <see langword="false"/> if the packet shouldn't be handled, and can possibly be sent to other handlers/listeners
         /// </returns>
         public abstract bool OnProcessPacketToClientACK(T packet);
 
@@ -99,13 +119,24 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
         /// the packet in the parameters will usually contain the information requested
         /// </para>
         /// <para>
-        /// Usually, this method is empty (because you usually use the <see cref="ReceivePacketAsync(int)"/> 
-        /// method, which will usually execute before this method... usually (it's async so there's a chance it will return after the method below))
+        /// Usually, this method is empty (because you usually use the <see cref="ReceivePacketAsync(uint)"/> method, 
+        /// which will usually execute before this method... usually (it's async so there's a chance it will return after the method below))
         /// </para>
+        /// <para>
+        /// Usually, this should return <see langword="true"/> because you typically use <see cref="ReceivePacketAsync(uint)"/> to process the packets,
+        /// and you dont want outside handlers and listeners having a look
+        /// </para>
+        /// <para>
+        /// And if this returns <see langword="false"/>, then it's
+        /// idempotency key will NOT be stored, and therefore the exact same packet could be 
+        /// processed multiple times, which is dangerous if it's a crucial transaction</para>
         /// </summary>
         /// <returns>
-        /// <see langword="true"/> if the packet is fully handled, and should't be sent anywhere else (see <see cref="REghZyIOWrapperV2.Packeting.Handling.IHandler.Handle(Packets.Packet)"/>),
-        /// <see langword="false"/> if the packet shouldn't be handled, and could possibly be sent to other handlers/listeners
+        /// <see langword="true"/> if the packet is fully handled, and should't be sent anywhere else (see <see cref="IHandler.Handle(Packets.Packet)"/>),
+        /// and the idempotency key will be stored.
+        /// 
+        /// <see langword="false"/> if the packet shouldn't be handled, and can possibly be 
+        /// sent to other handlers/listeners, and the idempotency key won't be stored
         /// </returns>
         public abstract bool OnProcessPacketToServer(T packet);
     }

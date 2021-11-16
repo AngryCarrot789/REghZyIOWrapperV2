@@ -136,6 +136,18 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
             }
         }
 
+        public void Clear() {
+            Node next = this.first;
+            while (next != null) {
+                Node node = next;
+                next = next.next;
+                node.Invalidate();
+            }
+
+            this.first.Invalidate();
+            this.first.range = new Range(0);
+        }
+
         // [] --- [] --- []
         // [] --- []
         // []
@@ -210,6 +222,11 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
                     this.prev = null;
                     this.next = null;
                 }
+            }
+
+            public void Invalidate() {
+                this.next = null;
+                this.prev = null;
             }
 
             /// <summary>

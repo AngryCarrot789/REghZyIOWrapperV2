@@ -41,7 +41,10 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
         // These 2 constants aren't used... they are just for me to remember the sizes ;)
         protected const uint ACK_TOTAL_HEADER = HEADER_SIZE + ACK_HEADER_SIZE;
 
-        public const uint IDEMPOTENCY_MIN = 0;
+        /// <summary>
+        /// The minimum allowed idempotency key. This is 1 due to how the <see cref="IdempotencyKeyStore"/> works
+        /// </summary>
+        public const uint IDEMPOTENCY_MIN = 1;
 
         // This is the maximum value you can store in 29 bits of data
         // and it should be enough to support a huge amount of ACK packets
@@ -79,11 +82,12 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
             uint nextKey;
             if (TypeToNextID.TryGetValue(type, out nextKey)) {
                 if (nextKey == IDEMPOTENCY_MAX) {
-                    // for the sake of why not... just wrap around to 0 if there are
+                    // for the sake of why not... just wrap around to the minimum if there are
                     // no more available IDs. realistically... this should never happen,
                     // but it's possible if the runtime is very long and a lot of ACK packets
                     // are sent
                     nextKey = IDEMPOTENCY_MIN;
+                    TypeToProcessedIDs[type].Clear();
                 }
                 else {
                     nextKey++;
@@ -103,38 +107,19 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
         /// <param name="id"></param>
         /// <returns></returns>
         public static bool IsHandled<T>(uint id) {
-            if (TypeToProcessedIDs.TryGetValue(typeof(T), out IdempotencyKeyStore store)) {
-                return store.HasKey(id);
-            }
-
-            return false;
+            return TypeToProcessedIDs[typeof(T)].HasKey(id);
         }
 
         public static bool IsHandled(PacketACK packet) {
-            if (TypeToProcessedIDs.TryGetValue(packet.GetType(), out IdempotencyKeyStore store)) {
-                return store.HasKey(packet.Key);
-            }
-
-            return false;
+            return TypeToProcessedIDs[packet.GetType()].HasKey(packet.Key);
         }
 
         public static bool SetHandled<T>(uint id) {
-            IdempotencyKeyStore store;
-            if (!TypeToProcessedIDs.TryGetValue(typeof(T), out store)) {
-                TypeToProcessedIDs[typeof(T)] = (store = new IdempotencyKeyStore());
-            }
-
-            return store.Put(id);
+            return TypeToProcessedIDs[typeof(T)].Put(id);
         }
 
         public static bool SetHandled(PacketACK packet) {
-            IdempotencyKeyStore store;
-            if (TypeToProcessedIDs.TryGetValue(packet.GetType(), out store)) {
-                return store.Put(packet.Key);
-            }
-
-            TypeToProcessedIDs[packet.GetType()] = (store = new IdempotencyKeyStore());
-            return store.Put(packet.Key);
+            return TypeToProcessedIDs[packet.GetType()].Put(packet.Key);
         }
 
         /// <summary>
@@ -178,6 +163,7 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
         public static void RegisterACKPacket<T>(byte id, 
             Func<DestinationCode, uint, IDataInput, ushort, T> fromServerToClientAck, 
             Func<DestinationCode, uint, IDataInput, ushort, T> fromClientToServer) where T : PacketACK {
+            TypeToProcessedIDs[typeof(T)] = new IdempotencyKeyStore();
             RegisterPacket<T>(id, (input, length) => {
                 uint keyAndDestination = input.ReadInt();
                 uint key = (keyAndDestination >> 3) & IDEMPOTENCY_MAX;

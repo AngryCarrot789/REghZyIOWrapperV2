@@ -30,14 +30,7 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
         }
 
         public override bool OnProcessPacketToServer(Packet3HardwareInfo packet) {
-            if (PacketACK.IsHandled(packet)) {
-                return true;
-            }
-
-            PacketACK.SetHandled(packet);
-            return false;
-            // dont need to handle this packet, because it will be
-            // listened to/waited for in the arduino device (GetHardwareNameAsync)
+            return true;
         }
     }
 }

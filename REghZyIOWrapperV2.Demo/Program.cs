@@ -45,17 +45,26 @@ namespace REghZyIOWrapperV2.Demo {
 
             system.Connection.Connect();
 
+            // using this means that any point in that code that isn't thread safe will be in danger if it receives packets,
+            // so eventually some sort of "packet spooler" would need to be used (e.g have the main thread, which does all the processing,
+            // spool packets from a concurrent list, and another thread will read packets and shove them in that list. basically what minecraft does)
             Thread thread = new Thread(() => {
                 while (true) {
-                    system.ReadNextPacket();
+                    if (!system.ReadNextPacket()) {
+                        Thread.Sleep(1);
+                    }
                 }
             });
 
             thread.Start();
 
-            Console.WriteLine("Getting server name...");
-            Task<Packet3HardwareInfo> packet = infoProc.ReceivePacketAsync(infoProc.SendRequest(Packet3HardwareInfo.HardwareInfos.HardwareName));
-            Console.WriteLine($"Name = {packet.Result.Information}");
+            Console.WriteLine("Getting server name 1st...");
+            Task<Packet3HardwareInfo> packet1 = infoProc.ReceivePacketAsync(infoProc.SendRequest(Packet3HardwareInfo.HardwareInfos.HardwareName));
+            Console.WriteLine($"Name = {packet1.Result.Information}");
+
+            Console.WriteLine("Getting server serial...");
+            Task<Packet3HardwareInfo> packet2 = infoProc.ReceivePacketAsync(infoProc.SendRequest(Packet3HardwareInfo.HardwareInfos.SerialPortName));
+            Console.WriteLine($"Port = {packet2.Result.Information}");
 
             while (true) {
                 Console.WriteLine("What's your name?");
@@ -69,7 +78,7 @@ namespace REghZyIOWrapperV2.Demo {
                     info.DateOfBirth = dot;
                     info.age = age;
                     system.SendPacket(info);
-                    Console.WriteLine($"Sent packet. Size = {info.GetLength()}");
+                    Console.WriteLine($"Sent packet. Size = {info.GetLength() + 3} (including header)");
                 }
                 else {
                     Console.WriteLine("bad age!!! not an int");
