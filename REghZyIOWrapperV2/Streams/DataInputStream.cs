@@ -1,6 +1,9 @@
 using System;
+using System.ComponentModel;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
+using REghZyIOWrapperV2.Utils;
 
 namespace REghZyIOWrapperV2.Streams {
     /// <summary>
@@ -12,6 +15,9 @@ namespace REghZyIOWrapperV2.Streams {
     public class DataInputStream : IDataInput {
         private Stream stream;
 
+        /// <summary>
+        /// A small buffer for reading into
+        /// </summary>
         private readonly byte[] buffer = new byte[8];
 
         public Stream Stream {
@@ -31,12 +37,40 @@ namespace REghZyIOWrapperV2.Streams {
             return this.stream.Read(buffer, offset, count);
         }
 
+        public void ReadFully(byte[] buffer) {
+            ReadFully(buffer, 0, buffer.Length);
+        }
+
+        public void ReadFully(byte[] buffer, int offset, int length) {
+            int n = 0;
+            Stream s = this.stream;
+            while (n < length) {
+                n += s.Read(buffer, offset + n, length - n);
+            }
+        }
+
         public bool ReadBool() {
             if (this.stream.Read(this.buffer, 0, 1) != 1) {
                 throw new EndOfStreamException("Failed to read 1 byte for a boolean");
             }
 
             return this.buffer[0] == 1;
+        }
+
+        public T ReadEnum8<T>() where T : unmanaged, Enum {
+            return EnumConversion<T>.FromByte(ReadByte());
+        }
+
+        public T ReadEnum16<T>() where T : unmanaged, Enum {
+            return EnumConversion<T>.FromUInt16(ReadShort());
+        }
+
+        public T ReadEnum32<T>() where T : unmanaged, Enum {
+            return EnumConversion<T>.FromUInt32(ReadInt());
+        }
+
+        public T ReadEnum64<T>() where T : unmanaged, Enum {
+            return EnumConversion<T>.FromUInt64(ReadLong());
         }
 
         public byte ReadByte() {
@@ -129,8 +163,13 @@ namespace REghZyIOWrapperV2.Streams {
         }
 
         public string ReadString(int len) {
+            return new string(ReadChars(len));
+        }
+
+        public char[] ReadChars(int len) {
+            char[] chars = new char[len];
             if (len == 0) {
-                return string.Empty;
+                return chars;
             }
             else {
                 byte[] b = this.buffer;
@@ -140,70 +179,70 @@ namespace REghZyIOWrapperV2.Streams {
                         throw new EndOfStreamException("Failed to read 2 bytes for a char (in string len 1)");
                     }
 
-                    return new string(new char[1] {(char) (ushort) ((b[0] << 8) + (b[1] << 0))});
+                    chars[0] = (char) (ushort) ((b[0] << 8) + (b[1] << 0));
+                    return chars;
                 }
                 else if (len == 2) {
                     if (s.Read(b, 0, 4) != 4) {
                         throw new EndOfStreamException("Failed to read 4 bytes for 2 chars (in string len 2)");
                     }
 
-                    return new string(new char[2] {
-                        (char) (ushort) ((b[0] << 8) + (b[1] << 0)),
-                        (char) (ushort) ((b[2] << 8) + (b[3] << 0)),
-                    });
+                    chars[0] = (char) (ushort) ((b[0] << 8) + (b[1] << 0));
+                    chars[1] = (char) (ushort) ((b[2] << 8) + (b[3] << 0));
+                    return chars;
                 }
                 else if (len == 3) {
                     if (s.Read(b, 0, 6) != 6) {
                         throw new EndOfStreamException("Failed to read 6 bytes for 3 chars (in string len 3)");
                     }
 
-                    return new string(new char[3] {
-                        (char) (ushort) ((b[0] << 8) + (b[1] << 0)),
-                        (char) (ushort) ((b[2] << 8) + (b[3] << 0)),
-                        (char) (ushort) ((b[4] << 8) + (b[5] << 0)),
-                    });
+                    chars[0] = (char) (ushort) ((b[0] << 8) + (b[1] << 0));
+                    chars[1] = (char) (ushort) ((b[2] << 8) + (b[3] << 0));
+                    chars[2] = (char) (ushort) ((b[4] << 8) + (b[5] << 0));
+                    return chars;
                 }
                 else {
-                    StringBuilder builder = new StringBuilder(len);
+                    int i = 0;
                     while (true) {
                         if (len > 3) {
                             if (s.Read(b, 0, 8) != 8) {
-                                throw new EndOfStreamException("Failed to read 8 bytes for 4 chars (in unknown string len)");
+                                throw new EndOfStreamException("Failed to read 8 bytes for 4 chars (in unknown string len, read " + i + " so far)");
                             }
 
-                            builder.Append((char) (ushort) ((b[0] << 8) + (b[1] << 0)));
-                            builder.Append((char) (ushort) ((b[2] << 8) + (b[3] << 0)));
-                            builder.Append((char) (ushort) ((b[4] << 8) + (b[5] << 0)));
-                            builder.Append((char) (ushort) ((b[6] << 8) + (b[7] << 0)));
+                            chars[i + 0] = ((char) (ushort) ((b[0] << 8) + (b[1] << 0)));
+                            chars[i + 1] = ((char) (ushort) ((b[2] << 8) + (b[3] << 0)));
+                            chars[i + 2] = ((char) (ushort) ((b[4] << 8) + (b[5] << 0)));
+                            chars[i + 3] = ((char) (ushort) ((b[6] << 8) + (b[7] << 0)));
                             len -= 4;
+                            i += 4;
                         }
                         else {
                             if (len == 3) {
                                 if (s.Read(b, 0, 6) != 6) {
-                                    throw new EndOfStreamException("Failed to read 6 bytes for 3 chars (in unknown string len, last 3 chars)");
+                                    throw new EndOfStreamException("Failed to read 6 bytes for 3 chars (in unknown string len, last 3 chars, read " + i + " so far)");
                                 }
 
-                                builder.Append((char) (ushort) ((b[0] << 8) + (b[1] << 0)));
-                                builder.Append((char) (ushort) ((b[2] << 8) + (b[3] << 0)));
-                                builder.Append((char) (ushort) ((b[4] << 8) + (b[5] << 0)));
+                                chars[i + 0] = ((char) (ushort) ((b[0] << 8) + (b[1] << 0)));
+                                chars[i + 1] = ((char) (ushort) ((b[2] << 8) + (b[3] << 0)));
+                                chars[i + 2] = ((char) (ushort) ((b[4] << 8) + (b[5] << 0)));
                             }
                             else if (len == 2) {
                                 if (s.Read(b, 0, 4) != 4) {
-                                    throw new EndOfStreamException("Failed to read 4 bytes for 2 chars (in unknown string len, last 2 chars)");
+                                    throw new EndOfStreamException("Failed to read 4 bytes for 2 chars (in unknown string len, last 2 chars, read " + i + " so far)");
                                 }
 
-                                builder.Append((char) (ushort) ((b[0] << 8) + (b[1] << 0)));
-                                builder.Append((char) (ushort) ((b[2] << 8) + (b[3] << 0)));
+                                chars[i + 0] = ((char) (ushort) ((b[0] << 8) + (b[1] << 0)));
+                                chars[i + 1] = ((char) (ushort) ((b[2] << 8) + (b[3] << 0)));
                             }
                             else if (len == 1) {
                                 if (s.Read(b, 0, 2) != 2) {
-                                    throw new EndOfStreamException("Failed to read 2 bytes for 1 char (in unknown string len, last 1 char)");
+                                    throw new EndOfStreamException("Failed to read 2 bytes for 1 char (in unknown string len, last 1 char, read " + i + " so far)");
                                 }
 
-                                builder.Append((char) (ushort) ((b[0] << 8) + (b[1] << 0)));
+                                chars[i] = ((char) (ushort) ((b[0] << 8) + (b[1] << 0)));
                             }
 
-                            return builder.ToString();
+                            return chars;
                         }
                     }
                 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using REghZyIOWrapperV2.Connections;
+using REghZyIOWrapperV2.Packeting.Handling;
 using REghZyIOWrapperV2.Packeting.Listeners;
 using REghZyIOWrapperV2.Packeting.Packets;
 
@@ -8,54 +9,59 @@ namespace REghZyIOWrapperV2.Packeting {
     /// <summary>
     /// A packet system is what handles sending and receiving packets, and delivering received packets to listeners
     /// </summary>
-    public abstract class PacketSystem {
+    public class PacketSystem {
+        /// <summary>
+        /// The connection that this packet system uses
+        /// </summary>
         public BaseConnection Connection { get; }
 
-        private List<IPacketListener> listeners;
+        /// <summary>
+        /// The packet handler
+        /// </summary>
+        public PacketHandler Handler { get; }
 
-        public PacketSystem(BaseConnection connection) {
+        public PacketSystem(BaseConnection connection, PacketHandler handler) {
             this.Connection = connection;
-            this.listeners = new List<IPacketListener>(32);
+            this.Handler = handler;
         }
 
         /// <summary>
-        /// Registers a listener, allowing it to receive received packets by this packet system
-        /// <para>
-        /// These listeners will maintain their order in which they are registered
-        /// </para>
+        /// Reads the next available packet
         /// </summary>
-        /// <param name="listener"></param>
-        public void RegisterListener(IPacketListener listener) {
-            if (this.listeners.Contains(listener)) {
-                throw new Exception("This packet system already contained the given packet listener");
+        /// <returns>
+        /// True if a packet was read, otherwise false (if there wasn't enough data available)
+        /// </returns>
+        public bool ReadNextPacket() {
+            int buffer = this.Connection.Stream.BytesAvailable;
+            if (buffer < 1) {
+                return false;
             }
 
-            this.listeners.Add(listener);
-        }
+            Packet packet;
 
-        /// <summary>
-        /// Unregisters a listener, stopping it from receiving received packets by this packet system
-        /// <para>
-        /// These listeners will maintain their order in which they are registered
-        /// </para>
-        /// </summary>
-        /// <param name="listener"></param>
-        public void UnregisterListener(IPacketListener listener) {
-            if (this.listeners.Remove(listener)) {
-                return;
+            try {
+                packet = Packet.ReadPacketHeadAndTail(this.Connection.Stream);
+            }
+            catch (Exception e) {
+                throw new Exception($"Failed to read packet. Buffer before: {buffer}, After: {this.Connection.Stream.BytesAvailable}", e);
             }
 
-            throw new Exception("Couldn't unregister packet listener, because it was never registered!");
+            HandlePacketReceived(packet);
+            return true;
         }
 
         /// <summary>
-        /// Called when a packet is received
+        /// Handles a packet that has been received
         /// </summary>
         /// <param name="packet"></param>
-        public void OnPacketReceived(Packet packet) {
-            foreach (IPacketListener listener in this.listeners) {
-                if (listener.OnReceivePacket(packet)) {
-                    return;
+        public void HandlePacketReceived(Packet packet) {
+            PacketHandler handler = this.Handler;
+            if (handler != null) {
+                try {
+                    handler.OnReceivePacket(packet);
+                }
+                catch (Exception e) {
+                    throw new Exception($"Failed to handle packet", e);
                 }
             }
         }
@@ -65,8 +71,7 @@ namespace REghZyIOWrapperV2.Packeting {
         /// </summary>
         /// <param name="packet">The packet to send (non-null)</param>
         public void SendPacket(Packet packet) {
-            Packet.WritePacket(packet, this.Connection.Output);
-            this.Connection.Flush();
+            Packet.WritePacket(packet, this.Connection.Stream.Output);
         }
     }
 }

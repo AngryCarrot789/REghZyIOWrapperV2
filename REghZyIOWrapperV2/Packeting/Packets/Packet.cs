@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using REghZyIOWrapperV2.Connections;
 using REghZyIOWrapperV2.Streams;
 
@@ -13,10 +14,11 @@ namespace REghZyIOWrapperV2.Packeting.Packets {
     /// </summary>
     public abstract class Packet {
         /// <summary>
-        /// An array of packet creators (taking the metadat and data input) and returns a packet instance
+        /// An array of packet creators (taking the data input and the received packet 
+        /// length (not including header length)) and returns a packet instance
         /// <para>Index is the packet ID</para>
         /// </summary>
-        private static readonly Func<IDataInput, Packet>[] PacketCreators;
+        private static readonly Func<IDataInput, ushort, Packet>[] PacketCreators;
 
         /// <summary>
         /// A dictionary that maps the ID of a packet to the type of packet (e.g 0 = typeof(Packet0HardwareInfo))
@@ -28,13 +30,10 @@ namespace REghZyIOWrapperV2.Packeting.Packets {
         /// </summary>
         private static readonly Dictionary<Type, byte> PacketTypeToId;
 
-        private static readonly Dictionary<byte, ushort> PacketIdToSize;
-
         static Packet() {
-            PacketCreators = new Func<IDataInput, Packet>[255];
+            PacketCreators = new Func<IDataInput, ushort, Packet>[255];
             PacketIdToType = new Dictionary<byte, Type>();
             PacketTypeToId = new Dictionary<Type, byte>();
-            PacketIdToSize = new Dictionary<byte, ushort>();
         }
 
         /// <summary>
@@ -89,17 +88,22 @@ namespace REghZyIOWrapperV2.Packeting.Packets {
         /// <summary>
         /// Writes the custom data in this packet to the given <see cref="IDataOutput"/> (ID and Meta are written automatically, so this is optional)
         /// </summary>
-        public abstract void Write(IDataOutput writer);
+        public abstract void Write(IDataOutput output);
+
+        /// <summary>
+        /// The length or size of the packet, in bytes. This should only include custom packet data, not the header (id + len)
+        /// </summary>
+        /// <returns>A value between 0 and 65535</returns>
+        public abstract ushort GetLength();
 
         /// <summary>
         /// Registers a packet type with the given ID (and optionally a creator for it).
         /// Usually, you register creators in a packet class' static constructor
         /// </summary>
         /// <param name="id">The packet ID is being registered</param>
-        /// <param name="size">The size of the packet (0-65535 bytes)</param>
         /// <param name="creator">The function that creates the packet, or null if one isn't needed</param>
         /// <typeparam name="T">The type of packet that is being registered</typeparam>
-        protected static void RegisterPacket<T>(byte id, Func<IDataInput, T> creator) where T : Packet {
+        protected static void RegisterPacket<T>(byte id, Func<IDataInput, ushort, T> creator) where T : Packet {
             Type type = typeof(T);
             if (type == typeof(Packet)) {
                 throw new Exception("Packet type cannot be the base abstract Packet type");
@@ -117,7 +121,6 @@ namespace REghZyIOWrapperV2.Packeting.Packets {
 
             PacketIdToType[id] = type;
             PacketTypeToId[type] = id;
-            // PacketIdToSize[id] = size;
         }
 
         /// <summary>
@@ -162,14 +165,6 @@ namespace REghZyIOWrapperV2.Packeting.Packets {
             throw new Exception($"The packet ID {id} was not registered");
         }
 
-        public static ushort GetPacketSize(byte packetId) {
-            if (PacketIdToSize.TryGetValue(packetId, out ushort size)) {
-                return size;
-            }
-
-            throw new Exception($"The packet ID {packetId} was not registered");
-        }
-
         public static bool IsPacketRegistered(byte id) {
             return PacketIdToType.ContainsKey(id);
         }
@@ -186,32 +181,45 @@ namespace REghZyIOWrapperV2.Packeting.Packets {
             }
 
             output.WriteByte(GetPacketID(packet));
+            output.WriteShort(packet.GetLength());
             packet.Write(output);
         }
 
-        public static Packet ReadPacket(IDataInput input) {
-            byte id = input.ReadByte();
-            Func<IDataInput, Packet> creator = PacketCreators[id];
-            if (creator == null) {
-                throw new Exception($"Missing packet creator for id {id}");
+        /// <summary>
+        /// Reads the packet header, and then reads the packet tail
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <returns></returns>
+        public static Packet ReadPacketHeadAndTail(DataStream stream) {
+            while (stream.BytesAvailable < 3) {
+                Thread.Sleep(1);
             }
 
-            try {
-                return creator(input);
-            }
-            catch (Exception e) {
-                throw new Exception("Failed to create packet from creator", e);
-            }
+            byte id = stream.Input.ReadByte();
+            ushort length = stream.Input.ReadShort();
+            return ReadPacketTail(id, length, stream);
         }
 
-        public static Packet ReadPacket(byte id, IDataInput input) {
-            Func<IDataInput, Packet> creator = PacketCreators[id];
+        /// <summary>
+        /// Gets the packet creator with the given 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="length"></param>
+        /// <param name="stream"></param>
+        /// <returns></returns>
+        public static Packet ReadPacketTail(byte id, ushort length, DataStream stream) {
+            while (stream.BytesAvailable < length) {
+                Thread.Sleep(1);
+            }
+
+            Func<IDataInput, ushort, Packet> creator = PacketCreators[id];
             if (creator == null) {
+                stream.Input.Read(new byte[length], 0, length);
                 throw new Exception($"Missing packet creator for id {id}");
             }
 
             try {
-                return creator(input);
+                return creator(stream.Input, length);
             }
             catch (Exception e) {
                 throw new Exception("Failed to create packet from creator", e);

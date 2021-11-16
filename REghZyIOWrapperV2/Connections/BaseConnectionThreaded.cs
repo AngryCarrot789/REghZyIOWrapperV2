@@ -1,16 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace REghZyIOWrapperV2.Connections {
     /// <summary>
-    /// A connection that constantly is constantly checking if there's data available
+    /// A connection that constantly is constantly checking if there's data available, and raises an event when there is
     /// </summary>
-    public abstract class ThreadConnection : BaseConnection {
+    public abstract class BaseConnectionThreaded : BaseConnection {
         private int sleepTime;
 
         private readonly Thread thread;
@@ -28,25 +23,35 @@ namespace REghZyIOWrapperV2.Connections {
         /// </summary>
         public Thread Thread { get => this.thread; }
 
-        protected ThreadConnection(Stream stream, int sleepTime = 1) : base(stream) {
+        public delegate void DataAvailable();
+
+        public event DataAvailable OnDataAvailable;
+
+        private bool paused;
+        public bool IsPaused {
+            get => this.paused; 
+            set => this.paused = value;
+        }
+
+        protected BaseConnectionThreaded(int sleepTime = 1) {
             this.sleepTime = sleepTime;
+            this.IsPaused = true;
             this.thread = new Thread(this.ThreadMain);
             this.thread.Start();
         }
-
-        protected ThreadConnection(int sleepTime = 1) {
-            this.sleepTime = sleepTime;
-            this.thread = new Thread(this.ThreadMain);
-            this.thread.Start();
-        }
-
-        public abstract void HandleDataAvailable();
 
         private void ThreadMain() {
             while(this.notDisposing) {
+                if (this.IsPaused) {
+                    Thread.Sleep(this.sleepTime);
+                    continue;
+                }
+
                 if (this.IsConnected) {
-                    if (this.BytesAvailable > 0) {
-                        this.HandleDataAvailable();
+                    if (this.Stream != null) {
+                        if (this.Stream.CanRead()) {
+                            OnDataAvailable?.Invoke();
+                        }
                     }
                 }
 

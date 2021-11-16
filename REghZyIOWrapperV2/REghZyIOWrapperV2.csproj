@@ -44,11 +44,26 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Connections\BaseConnection.cs" />
-    <Compile Include="Connections\SerialConnection.cs" />
-    <Compile Include="Connections\ThreadConnection.cs" />
-    <Compile Include="PacketConnections\DataConnection.cs" />
-    <Compile Include="PacketConnections\SerialDataConnection.cs" />
-    <Compile Include="PacketConnections\SerialDevice.cs" />
+    <Compile Include="Connections\BaseConnectionThreaded.cs" />
+    <Compile Include="Packeting\ACK\ACKProcessor.cs" />
+    <Compile Include="Packeting\ACK\ACKProcessor3HardwareInfo.cs" />
+    <Compile Include="Packeting\ACK\DestinationCode.cs" />
+    <Compile Include="Packeting\ACK\IdempotencyKeyStore.cs" />
+    <Compile Include="Packeting\ACK\Packet3HardwareInfo.cs" />
+    <Compile Include="Packeting\Exceptions\OutOfIdsException.cs" />
+    <Compile Include="Packeting\Exceptions\PacketCreationFailure.cs" />
+    <Compile Include="Packeting\Handling\GeneralListener.cs" />
+    <Compile Include="Packeting\Handling\GeneralHandler.cs" />
+    <Compile Include="Packeting\Handling\GenericListener.cs" />
+    <Compile Include="Packeting\Handling\PacketTypeListener.cs" />
+    <Compile Include="Packeting\Handling\IHandler.cs" />
+    <Compile Include="Packeting\Handling\GenericHandler.cs" />
+    <Compile Include="Packeting\Handling\IListener.cs" />
+    <Compile Include="Packeting\Handling\PacketHandler.cs" />
+    <Compile Include="Packeting\ACK\PacketACK.cs" />
+    <Compile Include="Packeting\PacketUtils.cs" />
+    <Compile Include="Streams\DataStream.cs" />
+    <Compile Include="Connections\Serial\SerialConnection.cs" />
     <Compile Include="Packeting\Listeners\FilteredPacketListener.cs" />
     <Compile Include="Packeting\Listeners\Filters\PacketFilter.cs" />
     <Compile Include="Packeting\Listeners\Filters\PacketIDFilter.cs" />
@@ -60,16 +75,16 @@
     <Compile Include="Packeting\Packets\Packet1LongData.cs" />
     <Compile Include="Packeting\Packets\Packet.cs" />
     <Compile Include="Packeting\Packets\Packet2YourInfo.cs" />
-    <Compile Include="Packeting\SerialPacketSystem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Streams\BlockingStream.cs" />
     <Compile Include="Streams\DataInputStream.cs" />
     <Compile Include="Streams\DataOutputStream.cs" />
     <Compile Include="Streams\IDataInput.cs" />
     <Compile Include="Streams\IDataOutput.cs" />
+    <Compile Include="Connections\Serial\SerialDataStream.cs" />
+    <Compile Include="Utils\EnumConversion.cs" />
+    <Compile Include="Utils\StringUtils.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Packets\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

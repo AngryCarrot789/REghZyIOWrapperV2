@@ -1,14 +1,11 @@
 ﻿using System;
 using System.IO;
-using System.Threading.Tasks;
-using REghZyIOWrapperV2.Packeting.Packets;
-using REghZyIOWrapperV2.Streams;
 
-namespace REghZyIOWrapperV2.PacketConnections {
+namespace REghZyIOWrapperV2.Streams {
     /// <summary>
-    /// A base class for an open connection (must be an active connection)
+    /// A base object stream that is always open
     /// </summary>
-    public abstract class DataConnection {
+    public abstract class DataStream {
         private readonly BlockingStream stream;
         private readonly DataInputStream input;
         private readonly DataOutputOutput output;
@@ -39,7 +36,7 @@ namespace REghZyIOWrapperV2.PacketConnections {
         /// </summary>
         public abstract int BytesAvailable { get; }
 
-        public DataConnection(Stream stream) {
+        public DataStream(Stream stream) {
             if (stream == null) {
                 throw new NullReferenceException("Stream cannot be null");
             }
@@ -55,17 +52,8 @@ namespace REghZyIOWrapperV2.PacketConnections {
         /// <returns></returns>
         public abstract bool CanRead();
 
-        public Packet ReadPacket() {
-            byte id = this.input.ReadByte();
-            return Packet.ReadPacket(id, this.input);
-        }
-
-        public void WritePacket(Packet packet) {
-            Packet.WritePacket(packet, this.output);
-        }
-
         /// <summary>
-        /// Flushes the stream buffer
+        /// Flushes the write buffer
         /// </summary>
         public void Flush() {
             this.stream.Flush();

@@ -14,7 +14,7 @@ namespace REghZyIOWrapperV2.Packeting.Packets {
         public ulong Data { get; set; }
 
         static Packet1LongData() {
-            RegisterPacket(1, (input) => new Packet1LongData(input.ReadLong()));
+            RegisterPacket(1, (input, len) => new Packet1LongData(input.ReadLong()));
         }
 
         public Packet1LongData(ulong data = 0) {
@@ -23,6 +23,10 @@ namespace REghZyIOWrapperV2.Packeting.Packets {
 
         public override void Write(IDataOutput writer) {
             writer.WriteLong(this.Data);
+        }
+
+        public override ushort GetLength() {
+            return 8;
         }
     }
 }

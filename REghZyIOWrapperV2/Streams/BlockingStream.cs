@@ -45,7 +45,8 @@ namespace REghZyIOWrapperV2.Streams {
             int a = 0;
             Stream s = this.stream;
             while (count > 0) {
-                a += s.Read(buffer, offset + a, count);
+                int r = s.Read(buffer, offset + a, count);
+                a += (r < 0 ? 0 : r);
                 count -= a;
             }
 

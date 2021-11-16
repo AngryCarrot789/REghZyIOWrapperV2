@@ -1,4 +1,5 @@
 ﻿using REghZyIOWrapperV2.Streams;
+using REghZyIOWrapperV2.Utils;
 
 namespace REghZyIOWrapperV2.Packeting.Packets {
     [PacketImplementation]
@@ -8,21 +9,23 @@ namespace REghZyIOWrapperV2.Packeting.Packets {
         public string DateOfBirth;
 
         static Packet2YourInfo() {
-            RegisterPacket(2, (input) => {
+            RegisterPacket(2, (input, len) => {
                 Packet2YourInfo info = new Packet2YourInfo();
-                info.Name = input.ReadString(input.ReadShort());
-                info.DateOfBirth = input.ReadString(input.ReadShort());
+                info.Name = PacketUtils.ReadStringWL(input);
                 info.age = (int) input.ReadInt();
+                info.DateOfBirth = PacketUtils.ReadStringWL(input);
                 return info;
             });
         }
 
-        public override void Write(IDataOutput writer) {
-            writer.WriteShort((ushort) this.Name.Length);
-            writer.WriteString(this.Name);
-            writer.WriteShort((ushort) this.DateOfBirth.Length);
-            writer.WriteString(this.Name);
-            writer.WriteInt((uint) this.age);
+        public override ushort GetLength() {
+            return (ushort) (4 + this.Name.GetBytesWL() + this.DateOfBirth.GetBytesWL());
+        }
+
+        public override void Write(IDataOutput output) {
+            PacketUtils.WriteStringWL(this.Name, output);
+            output.WriteInt((uint) this.age);
+            PacketUtils.WriteStringWL(this.DateOfBirth, output);
         }
     }
 }
