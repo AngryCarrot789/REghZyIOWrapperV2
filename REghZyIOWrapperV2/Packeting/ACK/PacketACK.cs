@@ -5,22 +5,42 @@ using REghZyIOWrapperV2.Packeting.Packets;
 using REghZyIOWrapperV2.Streams;
 
 namespace REghZyIOWrapperV2.Packeting.ACK {
-    // ACK Header = 1 byte
-    // The high 5 bits are the ACK IDs (0-31)
-    // The low 3 bits are the destination codes (0-7)
-
-    // the 2 generals problem is about acknowledgement 
-    // A sends a message to B, but how does A know B has received the message?
-    // B could send a message to A but A may not receive it due to packet loss maybe
-    // So B cannot know for certain that A has received a message,
-    // and back at the start, A cannot really know B has received their message
-    //
-    // When stuff like banking info is does, you use a token, which you generate for each transation.
-    // That way, you can send 1000s of packets with the same ID, and as long as the server receives just 1 of them,
-    // it will process that transaction, and any other packets it receives with the same token,
-    // it ignores so that it doesn't keep repeating the same transaction
-    // This token is also known as an idempotency token (or idempotency key)
+    /// <summary>
+    /// ACK Header = 4 bytes (Destination and idempotency key bit shifted together)
+    /// The high 29 bits are the ACK IDs (0 to 536870911 (536 million!))
+    /// The low 3 bits are the destination codes (0-7)
+    /// 
+    /// <para>
+    /// The 2 generals problem is about acknowledgement 
+    /// 'A' sends a message to 'B', but how does 'A' know 'B' has received the message?
+    /// 'B' could send a message to 'A' but 'A' may not receive it due to packet loss maybe
+    /// So 'B' cannot know for certain that 'A' has received a message,
+    /// and back at the start, 'A' cannot really know 'B' has received their message.
+    /// This problem is impossible to 100% solve, but there are solutions that work most of the time,
+    /// such as what i wrote below:
+    /// </para>
+    /// 
+    /// <para>
+    /// When stuff like banking is done, you use a token, which you generate for each transation.
+    /// That way, you can send 1000s of the EXACT SAME PACKET, and as long as the server receives just 1 of them,
+    /// it will process that one transaction and send a (or many) packet back.
+    /// And because you sent 1000, it will dump any other packets it receives with the same token,
+    /// ignoring it, so that it doesn't keep repeating the same transaction
+    /// This token is also known as an idempotency token (or idempotency key)
+    /// </para>
+    /// <para>
+    /// See this video where tom scott explains it very well: https://www.youtube.com/watch?v=IP-rGJKSZ3s
+    /// (tom got me into making this idempotency stuff too, lol)
+    /// </para>
+    /// </summary>
     public abstract class PacketACK : Packet {
+        // The size of an ACK packet's header (not including the base packet header size)
+        protected const uint ACK_HEADER_SIZE = 4;
+
+        // Including the base packet's header, the total ACK packet header size is 7 bytes
+        // These 2 constants aren't used... they are just for me to remember the sizes ;)
+        protected const uint ACK_TOTAL_HEADER = HEADER_SIZE + ACK_HEADER_SIZE;
+
         public const uint IDEMPOTENCY_MIN = 0;
 
         // This is the maximum value you can store in 29 bits of data
@@ -109,11 +129,11 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
 
         public static bool SetHandled(PacketACK packet) {
             IdempotencyKeyStore store;
-            Type type = packet.GetType();
-            if (!TypeToProcessedIDs.TryGetValue(type, out store)) {
-                TypeToProcessedIDs[type] = (store = new IdempotencyKeyStore());
+            if (TypeToProcessedIDs.TryGetValue(packet.GetType(), out store)) {
+                return store.Put(packet.Key);
             }
 
+            TypeToProcessedIDs[packet.GetType()] = (store = new IdempotencyKeyStore());
             return store.Put(packet.Key);
         }
 
@@ -223,7 +243,7 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
         /// The length or size of this ACK packet, in bytes. This should only include custom packet 
         /// data, not the header (id + len), nor the ACK header (destination code + ack id)
         /// </summary>
-        /// <returns>A value between 0 and 65534</returns>
+        /// <returns>A value between 0 and 65531</returns>
         public abstract ushort GetLengthACK();
     }
 }

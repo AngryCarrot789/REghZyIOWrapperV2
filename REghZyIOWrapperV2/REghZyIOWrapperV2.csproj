@@ -57,7 +57,6 @@
     <Compile Include="Packeting\Handling\GeneralListener.cs" />
     <Compile Include="Packeting\Handling\GeneralHandler.cs" />
     <Compile Include="Packeting\Handling\GenericListener.cs" />
-    <Compile Include="Packeting\Handling\PacketTypeListener.cs" />
     <Compile Include="Packeting\Handling\IHandler.cs" />
     <Compile Include="Packeting\Handling\GenericHandler.cs" />
     <Compile Include="Packeting\Handling\IListener.cs" />

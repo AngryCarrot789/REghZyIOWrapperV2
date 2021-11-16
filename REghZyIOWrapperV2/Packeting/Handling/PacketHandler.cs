@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using REghZyIOWrapperV2.Packeting.Packets;
 
 namespace REghZyIOWrapperV2.Packeting.Handling {
+    /// <summary>
+    /// A class for registering packet listeners and handlers, and also for managing packets and delivering them correctly
+    /// </summary>
     public class PacketHandler {
         private readonly PriorityMap map;
 

@@ -14,6 +14,11 @@ namespace REghZyIOWrapperV2.Packeting.Packets {
     /// require sending the length, but custom ones are (aka Packet250CustomPayload)
     /// </summary>
     public abstract class Packet {
+        // This is how big the normal packet header is
+        // byte 1 = ID
+        // byte 2 and 3 (as a ushort) = Packet Length
+        protected const uint HEADER_SIZE = 3;
+
         /// <summary>
         /// An array of packet creators (taking the data input and the received packet 
         /// length (not including header length)) and returns a packet instance
