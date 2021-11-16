@@ -6,13 +6,30 @@ using System.Threading.Tasks;
 using REghZyIOWrapperV2.Packeting.Packets;
 
 namespace REghZyIOWrapperV2.Packeting.Handling {
+    /// <summary>
+    /// A map, mapping a priority to a collection of listeners and handlers
+    /// <para>
+    /// Listeners of the same priority as handlers will receive packets first, e.g a listener with priotity 1 
+    /// will receive packets first, then handlers or priority 1 will receive packets. But, listeners of priority 2 will
+    /// receive packets AFTER handlers of priority 1
+    /// </para>
+    /// <para>
+    /// So the order of received packets being delivered is: 
+    /// Listeners(HIGHEST), Handers(HIGHEST), Listeners(HIGH), Handers(HIGH), Listeners(NORMAL),
+    /// Handers(NORMAL), Listeners(LOW), Handers(LOW), Listeners(LOWEST), Handers(LOWEST), 
+    /// </para>
+    /// <para>
+    /// This means listeners have an overall higher priority than handlers of the same 
+    /// priority level, which may be useful for "sniffing" packets before they get handled
+    /// </para>
+    /// </summary>
     public class PriorityMap {
         private readonly List<IHandler>[] handlers;
         private readonly List<IListener>[] listeners;
 
         public PriorityMap() {
-            this.handlers = new List<IHandler>[5];
-            this.listeners = new List<IListener>[5];
+            this.handlers = new List<IHandler>[6];
+            this.listeners = new List<IListener>[6];
 
             this.handlers[(int) Priority.HIGHEST] = new List<IHandler>();
             this.handlers[(int) Priority.HIGH] = new List<IHandler>();

@@ -12,7 +12,7 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
         public uint SendRequest(Packet3HardwareInfo.HardwareInfos info) {
             Packet3HardwareInfo packet = new Packet3HardwareInfo(info) {
                 Destination = DestinationCode.ToClient, 
-                Key = PacketACK.GetNextID<Packet3HardwareInfo>()
+                Key = PacketACK.GetNextID<Packet3HardwareInfo>(),
             };
 
             this.SendPacket(packet);
@@ -23,7 +23,7 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
             string info = this.GetInfoCallback(packet.Code);
             this.SendPacket(new Packet3HardwareInfo(packet.Code, info) {
                 Key = packet.Key,
-                Destination = packet.Destination
+                Destination = DestinationCode.ToServer
             });
 
             return true;

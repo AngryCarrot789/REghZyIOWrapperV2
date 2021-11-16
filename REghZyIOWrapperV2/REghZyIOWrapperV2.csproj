@@ -50,8 +50,10 @@
     <Compile Include="Packeting\ACK\DestinationCode.cs" />
     <Compile Include="Packeting\ACK\IdempotencyKeyStore.cs" />
     <Compile Include="Packeting\ACK\Packet3HardwareInfo.cs" />
+    <Compile Include="Packeting\Exceptions\ACKException.cs" />
     <Compile Include="Packeting\Exceptions\OutOfIdsException.cs" />
     <Compile Include="Packeting\Exceptions\PacketCreationFailure.cs" />
+    <Compile Include="Packeting\Exceptions\PacketException.cs" />
     <Compile Include="Packeting\Handling\GeneralListener.cs" />
     <Compile Include="Packeting\Handling\GeneralHandler.cs" />
     <Compile Include="Packeting\Handling\GenericListener.cs" />

@@ -1,6 +1,7 @@
 ﻿using REghZyIOWrapperV2.Streams;
 
 namespace REghZyIOWrapperV2.Packeting.ACK {
+    [PacketImplementation]
     public class Packet3HardwareInfo : PacketACK {
         public enum HardwareInfos : byte {
             HardwareName = 1, // request the name of the hardware

@@ -24,13 +24,23 @@ namespace REghZyIOWrapperV2.Packeting.Handling {
         }
     }
 
-    public class GenericHandler<T> : GenericHandler where T : Packet {
-        public GenericHandler(Predicate<T> handler) : base(typeof(T), (Predicate<Packet>) handler) {
-            
+    public class GenericHandler<T> : IHandler where T : Packet {
+        private readonly Predicate<T> handler;
+
+        public GenericHandler(Predicate<T> handler) {
+            if (handler == null) {
+                throw new NullReferenceException("Handler cannot be null");
+            }
+
+            this.handler = handler;
         }
 
-        public GenericHandler(Predicate<Packet> handler) : base(typeof(T), handler) {
+        public bool CanHandle(Packet packet) {
+            return packet.GetType().Equals(typeof(T));
+        }
 
+        public bool Handle(Packet packet) {
+            return this.handler((T) packet);
         }
     }
 }

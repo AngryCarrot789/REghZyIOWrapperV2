@@ -187,7 +187,7 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
         public sealed override void Write(IDataOutput output) {
             DestinationCode code = this.Destination;
             if (code == DestinationCode.ClientACK) {
-                throw new Exception("Attempted to write a client ACK packet (Packet should've been recreated using the DestinationCode.ToServer code)");
+                throw new ACKException("Attempted to write a client ACK packet (Packet should've been recreated using the DestinationCode.ToServer code)");
             }
 
             if (code == DestinationCode.ToClient || code == DestinationCode.ToServer) {
@@ -199,11 +199,11 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
                     WriteToServer(output);
                 }
                 else {
-                    throw new Exception("Invalid destination code, it was not to the client or server");
+                    throw new ACKException("Invalid destination code, it was not to the client or server");
                 }
             }
             else {
-                throw new Exception("Invalid destination code, it was not to the client or server");
+                throw new ACKException("Invalid destination code, it was not to the client or server");
             }
         }
 

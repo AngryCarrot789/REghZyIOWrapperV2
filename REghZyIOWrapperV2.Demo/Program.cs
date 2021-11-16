@@ -1,12 +1,13 @@
 ﻿using System;
 using System.IO.Ports;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 using REghZyIOWrapperV2.Connections.Serial;
 using REghZyIOWrapperV2.Packeting;
 using REghZyIOWrapperV2.Packeting.ACK;
 using REghZyIOWrapperV2.Packeting.Handling;
-using REghZyIOWrapperV2.Packeting.Listeners;
 using REghZyIOWrapperV2.Packeting.Packets;
-using REghZyIOWrapperV2.Utils;
 
 namespace REghZyIOWrapperV2.Demo {
     internal class Program {
@@ -18,34 +19,45 @@ namespace REghZyIOWrapperV2.Demo {
                 Packet.RunPacketCtor(type);
             }
 
-            SerialConnection connection = new SerialConnection(port);
-            PacketHandler handler = new PacketHandler();
-            PacketSystem system = new PacketSystem(connection, handler);
-            handler.RegisterListener<Packet1LongData>((p) => {
-                Console.WriteLine($"Received Packet1LongData: {p.Data}");
+            PacketSystem system = new PacketSystem(new SerialConnection(port), new PacketHandler());
+            ACKProcessor3HardwareInfo infoProc = new ACKProcessor3HardwareInfo(system, (c) => {
+                switch (c) {
+                    case Packet3HardwareInfo.HardwareInfos.HardwareName:
+                        return "Server Hardware";
+                    case Packet3HardwareInfo.HardwareInfos.SerialPortName:
+                        return port;
+                    default:
+                        return "<Error-Unknown_Code>";
+                }
             });
 
-            handler.RegisterListener<Packet2YourInfo>((p) => {
+            system.Handler.RegisterListener<Packet1LongData>((p) => {
+                Console.WriteLine($"Received Packet1LongData: {p.Data}");
+            }, Priority.HIGHEST);
+
+            system.Handler.RegisterListener<Packet2YourInfo>((p) => {
                 Console.WriteLine($"Received Packet2YourInfo. Name = '{p.Name}', DOB = '{p.DateOfBirth}', Age = '{p.age}'");
-            });
+            }, Priority.HIGHEST);
+
+            system.Handler.RegisterListener<Packet3HardwareInfo>((p) => {
+                Console.WriteLine($"Received Packet3HardwareInfo. Key = {p.Key}, Dest = {p.Destination}, InfoCode = {p.Code}, Info = {p.Information}");
+            }, Priority.HIGHEST);
 
             system.Connection.Connect();
-            system.SendPacket(new Packet1LongData(1));
-            system.SendPacket(new Packet1LongData(2));
-            system.SendPacket(new Packet1LongData(3));
-            system.SendPacket(new Packet1LongData(4));
-            system.SendPacket(new Packet1LongData(5));
-            system.SendPacket(new Packet1LongData(6));
-            system.SendPacket(new Packet1LongData(7));
-            system.SendPacket(new Packet1LongData(8));
-            system.SendPacket(new Packet1LongData(9));
-            system.SendPacket(new Packet1LongData(10));
-            system.SendPacket(new Packet1LongData(11));
-            system.SendPacket(new Packet1LongData(12));
-            system.SendPacket(new Packet1LongData(5425));
+
+            Thread thread = new Thread(() => {
+                while (true) {
+                    system.ReadNextPacket();
+                }
+            });
+
+            thread.Start();
+
+            Console.WriteLine("Getting server name...");
+            Task<Packet3HardwareInfo> packet = infoProc.ReceivePacketAsync(infoProc.SendRequest(Packet3HardwareInfo.HardwareInfos.HardwareName));
+            Console.WriteLine($"Name = {packet.Result.Information}");
 
             while (true) {
-                system.ReadNextPacket();
                 Console.WriteLine("What's your name?");
                 string name = Console.ReadLine();
                 Console.WriteLine("What's your DOB?");

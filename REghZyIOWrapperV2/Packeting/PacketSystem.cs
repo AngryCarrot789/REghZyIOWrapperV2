@@ -1,5 +1,6 @@
 using System;
 using REghZyIOWrapperV2.Connections;
+using REghZyIOWrapperV2.Packeting.Exceptions;
 using REghZyIOWrapperV2.Packeting.Handling;
 using REghZyIOWrapperV2.Packeting.Packets;
 
@@ -39,6 +40,9 @@ namespace REghZyIOWrapperV2.Packeting {
 
             try {
                 packet = Packet.ReadPacketHeadAndTail(this.Connection.Stream);
+            }
+            catch (PacketException e) {
+                throw e;
             }
             catch (Exception e) {
                 throw new Exception($"Failed to read packet. Buffer before: {buffer}, After: {this.Connection.Stream.BytesAvailable}", e);

@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using REghZyIOWrapperV2.Packeting.Listeners;
+using REghZyIOWrapperV2.Packeting.Exceptions;
+using REghZyIOWrapperV2.Packeting.Handling;
 
 namespace REghZyIOWrapperV2.Packeting.ACK {
     /// <summary>
@@ -19,13 +18,13 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
             get => this.packetSystem;
         }
 
-        protected ACKProcessor(PacketSystem packetSystem) {
+        protected ACKProcessor(PacketSystem packetSystem, Priority priority = Priority.HIGHEST) {
             if (packetSystem == null) {
                 throw new ArgumentNullException(nameof(packetSystem), "Packet system cannot be null");
             }
 
             this.packetSystem = packetSystem;
-            this.packetSystem.Handler.RegisterHandler<T>(OnPacketReceived);
+            this.packetSystem.Handler.RegisterHandler<T>(OnPacketReceived, priority);
         }
 
         /// <summary>
@@ -50,7 +49,7 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
             }
             else {
                 // bug???
-                throw new Exception("Received hardware info packet destination was not ACK or ToServer");
+                throw new ACKException("Received hardware info packet destination was not ACK or ToServer");
             }
         }
 

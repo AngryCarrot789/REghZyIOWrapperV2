@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using REghZyIOWrapperV2.Connections;
+using REghZyIOWrapperV2.Packeting.Exceptions;
 using REghZyIOWrapperV2.Streams;
 
 namespace REghZyIOWrapperV2.Packeting.Packets {
@@ -215,14 +216,14 @@ namespace REghZyIOWrapperV2.Packeting.Packets {
             Func<IDataInput, ushort, Packet> creator = PacketCreators[id];
             if (creator == null) {
                 stream.Input.Read(new byte[length], 0, length);
-                throw new Exception($"Missing packet creator for id {id}");
+                throw new PacketException($"Missing packet creator for id {id}");
             }
 
             try {
                 return creator(stream.Input, length);
             }
             catch (Exception e) {
-                throw new Exception("Failed to create packet from creator", e);
+                throw new PacketException("Failed to create packet from creator", e);
             }
         }
     }
