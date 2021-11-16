@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
 using REghZyIOWrapperV2.Connections;
 using REghZyIOWrapperV2.Packeting.Handling;
-using REghZyIOWrapperV2.Packeting.Listeners;
 using REghZyIOWrapperV2.Packeting.Packets;
 
 namespace REghZyIOWrapperV2.Packeting {

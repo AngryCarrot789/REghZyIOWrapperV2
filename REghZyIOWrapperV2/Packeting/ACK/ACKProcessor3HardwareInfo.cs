@@ -19,15 +19,23 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
             return packet.Key;
         }
 
-        public override void OnProcessPacketToClientACK(Packet3HardwareInfo packet) {
+        public override bool OnProcessPacketToClientACK(Packet3HardwareInfo packet) {
             string info = this.GetInfoCallback(packet.Code);
             this.SendPacket(new Packet3HardwareInfo(packet.Code, info) {
                 Key = packet.Key,
                 Destination = packet.Destination
             });
+
+            return true;
         }
 
-        public override void OnProcessPacketToServer(Packet3HardwareInfo packet) {
+        public override bool OnProcessPacketToServer(Packet3HardwareInfo packet) {
+            if (PacketACK.IsHandled(packet)) {
+                return true;
+            }
+
+            PacketACK.SetHandled(packet);
+            return false;
             // dont need to handle this packet, because it will be
             // listened to/waited for in the arduino device (GetHardwareNameAsync)
         }

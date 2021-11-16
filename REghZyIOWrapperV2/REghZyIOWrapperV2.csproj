@@ -61,15 +61,11 @@
     <Compile Include="Packeting\Handling\IListener.cs" />
     <Compile Include="Packeting\Handling\PacketHandler.cs" />
     <Compile Include="Packeting\ACK\PacketACK.cs" />
+    <Compile Include="Packeting\Handling\Priority.cs" />
+    <Compile Include="Packeting\Handling\PriorityMap.cs" />
     <Compile Include="Packeting\PacketUtils.cs" />
     <Compile Include="Streams\DataStream.cs" />
     <Compile Include="Connections\Serial\SerialConnection.cs" />
-    <Compile Include="Packeting\Listeners\FilteredPacketListener.cs" />
-    <Compile Include="Packeting\Listeners\Filters\PacketFilter.cs" />
-    <Compile Include="Packeting\Listeners\Filters\PacketIDFilter.cs" />
-    <Compile Include="Packeting\Listeners\Filters\PacketPredicateFilter.cs" />
-    <Compile Include="Packeting\Listeners\GenericPacketListener.cs" />
-    <Compile Include="Packeting\Listeners\IPacketListener.cs" />
     <Compile Include="Packeting\PacketImplementation.cs" />
     <Compile Include="Packeting\PacketSystem.cs" />
     <Compile Include="Packeting\Packets\Packet1LongData.cs" />

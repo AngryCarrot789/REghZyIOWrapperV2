@@ -12,8 +12,7 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
     /// </summary>
     /// <typeparam name="T">The type of ACK packet</typeparam>
     public abstract class ACKProcessor<T> where T : PacketACK {
-        private readonly Dictionary<uint, T> LastReceivedPackets = new Dictionary<uint, T>();
-
+        private readonly Dictionary<uint, T> LastReceivedPacket = new Dictionary<uint, T>();
         private readonly PacketSystem packetSystem;
 
         public PacketSystem PacketSystem {
@@ -26,7 +25,7 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
             }
 
             this.packetSystem = packetSystem;
-            this.packetSystem.Handler.RegisterHandler<T>((p) => { OnPacketReceived(p); return true; });
+            this.packetSystem.Handler.RegisterHandler<T>(OnPacketReceived);
         }
 
         /// <summary>
@@ -39,15 +38,15 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
         /// </para>
         /// </summary>
         /// <param name="packet"></param>
-        private void OnPacketReceived(T packet) {
+        private bool OnPacketReceived(T packet) {
             if (packet.Destination == DestinationCode.ClientACK) {
                 // acknowledgement
-                OnProcessPacketToClientACK(packet);
+                return OnProcessPacketToClientACK(packet);
             }
             else if (packet.Destination == DestinationCode.ToServer) {
                 // contains actual info
-                this.LastReceivedPackets[packet.Key] = packet;
-                OnProcessPacketToServer(packet);
+                this.LastReceivedPacket[packet.Key] = packet;
+                return OnProcessPacketToServer(packet);
             }
             else {
                 // bug???
@@ -63,7 +62,7 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
         /// </summary>
         public async Task<T> ReceivePacketAsync(uint id) {
             while (true) {
-                if (this.LastReceivedPackets.TryGetValue(id, out T packet) && packet != null) {
+                if (this.LastReceivedPacket.TryGetValue(id, out T packet) && packet != null) {
                     return packet;
                 }
 
@@ -87,7 +86,11 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
         /// contain request information, which will be used to fill in data for a new packet, and then be sent to the server
         /// </para>
         /// </summary>
-        public abstract void OnProcessPacketToClientACK(T packet);
+        /// <returns>
+        /// <see langword="true"/> if the packet is fully handled, and should't be sent anywhere else (see <see cref="REghZyIOWrapperV2.Packeting.Handling.IHandler.Handle(Packets.Packet)"/>),
+        /// <see langword="false"/> if the packet shouldn't be handled, and could possibly be sent to other handlers/listeners
+        /// </returns>
+        public abstract bool OnProcessPacketToClientACK(T packet);
 
         /// <summary>
         /// This will only be called if this is the server. It is called when we (the server) 
@@ -101,6 +104,10 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
         /// method, which will usually execute before this method... usually (it's async so there's a chance it will return after the method below))
         /// </para>
         /// </summary>
-        public abstract void OnProcessPacketToServer(T packet);
+        /// <returns>
+        /// <see langword="true"/> if the packet is fully handled, and should't be sent anywhere else (see <see cref="REghZyIOWrapperV2.Packeting.Handling.IHandler.Handle(Packets.Packet)"/>),
+        /// <see langword="false"/> if the packet shouldn't be handled, and could possibly be sent to other handlers/listeners
+        /// </returns>
+        public abstract bool OnProcessPacketToServer(T packet);
     }
 }

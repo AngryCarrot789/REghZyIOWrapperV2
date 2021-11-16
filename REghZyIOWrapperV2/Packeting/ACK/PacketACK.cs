@@ -90,6 +90,14 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
             return false;
         }
 
+        public static bool IsHandled(PacketACK packet) {
+            if (TypeToProcessedIDs.TryGetValue(packet.GetType(), out IdempotencyKeyStore store)) {
+                return store.HasKey(packet.Key);
+            }
+
+            return false;
+        }
+
         public static bool SetHandled<T>(uint id) {
             IdempotencyKeyStore store;
             if (!TypeToProcessedIDs.TryGetValue(typeof(T), out store)) {
@@ -97,6 +105,16 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
             }
 
             return store.Put(id);
+        }
+
+        public static bool SetHandled(PacketACK packet) {
+            IdempotencyKeyStore store;
+            Type type = packet.GetType();
+            if (!TypeToProcessedIDs.TryGetValue(type, out store)) {
+                TypeToProcessedIDs[type] = (store = new IdempotencyKeyStore());
+            }
+
+            return store.Put(packet.Key);
         }
 
         /// <summary>
