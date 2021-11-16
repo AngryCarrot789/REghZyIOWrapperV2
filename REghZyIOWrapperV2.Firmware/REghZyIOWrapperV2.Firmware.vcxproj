@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{9e94d532-af1d-4df7-8c4e-506b29080dd7}</ProjectGuid>
+    <ProjectGuid>{cb296d41-79aa-4878-91ec-2d406b08b3c9}</ProjectGuid>
     <RootNamespace>REghZyIOWrapperV2Firmware</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -72,42 +72,30 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
-    <PublicModuleDirectories>
-    </PublicModuleDirectories>
-    <ExecutablePath>$(VC_ExecutablePath_x86);$(CommonExecutablePath);</ExecutablePath>
-    <ExternalIncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</ExternalIncludePath>
-    <SourcePath>$(VC_SourcePath);C:\Program Files (x86)\Arduino\hardware\arduino\avr\cores\arduino;</SourcePath>
-    <PublicIncludeDirectories>C:\Program Files (x86)\Arduino\hardware\arduino\avr\cores\arduino</PublicIncludeDirectories>
-    <AllProjectIncludesArePublic>true</AllProjectIncludesArePublic>
-    <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
+    <IncludePath>C:\Program Files %28x86%29\Arduino\hardware\arduino\avr\cores\arduino;C:\\Program Files %28x86%29\\Arduino\\hardware\\arduino\\avr\\variants\\standard;c:\\program files %28x86%29\\arduino\\hardware\\tools\\avr\\lib\\gcc\\avr\\7.3.0\\include;c:\\program files %28x86%29\\arduino\\hardware\\tools\\avr\\lib\\gcc\\avr\\7.3.0\\include-fixed;c:\\program files %28x86%29\\arduino\\hardware\\tools\\avr\\avr\\include;$(IncludePath)</IncludePath>
+    <SourcePath>C:\Program Files %28x86%29\Arduino\hardware\arduino\avr\libraries;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
-    <PublicModuleDirectories>
-    </PublicModuleDirectories>
-    <ExecutablePath>$(VC_ExecutablePath_x86);$(CommonExecutablePath);</ExecutablePath>
-    <ExternalIncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</ExternalIncludePath>
-    <SourcePath>$(VC_SourcePath);C:\Program Files (x86)\Arduino\hardware\arduino\avr\cores\arduino;</SourcePath>
-    <PublicIncludeDirectories>C:\Program Files (x86)\Arduino\hardware\arduino\avr\cores\arduino</PublicIncludeDirectories>
-    <AllProjectIncludesArePublic>true</AllProjectIncludesArePublic>
-    <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
+    <IncludePath>C:\Program Files %28x86%29\Arduino\hardware\arduino\avr\cores\arduino;C:\\Program Files %28x86%29\\Arduino\\hardware\\arduino\\avr\\variants\\standard;c:\\program files %28x86%29\\arduino\\hardware\\tools\\avr\\lib\\gcc\\avr\\7.3.0\\include;c:\\program files %28x86%29\\arduino\\hardware\\tools\\avr\\lib\\gcc\\avr\\7.3.0\\include-fixed;c:\\program files %28x86%29\\arduino\\hardware\\tools\\avr\\avr\\include;$(IncludePath)</IncludePath>
+    <SourcePath>C:\Program Files %28x86%29\Arduino\hardware\arduino\avr\libraries;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>C:\Program Files %28x86%29\Arduino\hardware\arduino\avr\cores\arduino;C:\\Program Files %28x86%29\\Arduino\\hardware\\arduino\\avr\\variants\\standard;c:\\program files %28x86%29\\arduino\\hardware\\tools\\avr\\lib\\gcc\\avr\\7.3.0\\include;c:\\program files %28x86%29\\arduino\\hardware\\tools\\avr\\lib\\gcc\\avr\\7.3.0\\include-fixed;c:\\program files %28x86%29\\arduino\\hardware\\tools\\avr\\avr\\include;$(IncludePath)</IncludePath>
+    <SourcePath>C:\Program Files %28x86%29\Arduino\hardware\arduino\avr\libraries;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>C:\Program Files %28x86%29\Arduino\hardware\arduino\avr\cores\arduino;C:\\Program Files %28x86%29\\Arduino\\hardware\\arduino\\avr\\variants\\standard;c:\\program files %28x86%29\\arduino\\hardware\\tools\\avr\\lib\\gcc\\avr\\7.3.0\\include;c:\\program files %28x86%29\\arduino\\hardware\\tools\\avr\\lib\\gcc\\avr\\7.3.0\\include-fixed;c:\\program files %28x86%29\\arduino\\hardware\\tools\\avr\\avr\\include;$(IncludePath)</IncludePath>
+    <SourcePath>C:\Program Files %28x86%29\Arduino\hardware\arduino\avr\libraries;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>__AVR_atmega328p__;__AVR_ATmega328P__;__AVR_ATmega328p__;_VMDEBUG=1;F_CPU=16000000L;ARDUINO=108013;ARDUINO_AVR_UNO;ARDUINO_ARCH_AVR;__cplusplus=201103L;_VMICRO_INTELLISENSE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);USBCON</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\REghZyIOWrapper.Firmware;C:\Program Files (x86)\Arduino\hardware\arduino\avr\cores\arduino;C:\Program Files (x86)\Arduino\hardware\arduino\avr\variants\standard;C:\Program Files (x86)\Arduino\hardware\tools\avr\\lib\gcc\avr\7.3.0\include;C:\Program Files (x86)\Arduino\hardware\tools\avr\avr\include;C:\Program Files (x86)\Arduino\hardware\tools\avr\\lib\gcc\avr\7.3.0\include;C:\Program Files (x86)\Arduino\hardware\tools\avr\avr\include-fixed;C:\Program Files (x86)\Arduino\hardware\tools\avr\avr\include\avr;C:\Program Files (x86)\Arduino\hardware\tools\avr\lib\gcc\avr\4.9.2\include;C:\Program Files (x86)\Arduino\hardware\tools\avr\lib\gcc\avr\4.9.2\include;C:\Program Files (x86)\Arduino\hardware\tools\avr\lib\gcc\avr\4.9.3\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <ForcedIncludeFiles>$(ProjectDir)__vm\.REghZyIOWrapper.Firmware.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -120,10 +108,8 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>__AVR_atmega328p__;__AVR_ATmega328P__;__AVR_ATmega328p__;F_CPU=16000000L;ARDUINO=108013;ARDUINO_AVR_UNO;ARDUINO_ARCH_AVR;__cplusplus=201103L;_VMICRO_INTELLISENSE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);USBCON</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\REghZyIOWrapper.Firmware;C:\Program Files (x86)\Arduino\hardware\arduino\avr\cores\arduino;C:\Program Files (x86)\Arduino\hardware\arduino\avr\variants\standard;C:\Program Files (x86)\Arduino\hardware\tools\avr\\lib\gcc\avr\7.3.0\include;C:\Program Files (x86)\Arduino\hardware\tools\avr\avr\include;C:\Program Files (x86)\Arduino\hardware\tools\avr\\lib\gcc\avr\7.3.0\include;C:\Program Files (x86)\Arduino\hardware\tools\avr\avr\include-fixed;C:\Program Files (x86)\Arduino\hardware\tools\avr\avr\include\avr;C:\Program Files (x86)\Arduino\hardware\tools\avr\lib\gcc\avr\4.9.2\include;C:\Program Files (x86)\Arduino\hardware\tools\avr\lib\gcc\avr\4.9.2\include;C:\Program Files (x86)\Arduino\hardware\tools\avr\lib\gcc\avr\4.9.3\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <ForcedIncludeFiles>$(ProjectDir)__vm\.REghZyIOWrapper.Firmware.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -136,7 +122,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);USBCON</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -150,7 +136,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);USBCON</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -161,12 +147,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="packets\PacketReader.h" />
-    <ClInclude Include="StringBuilder.h" />
-    <ClInclude Include="__vm\.REghZyIOWrapper.Firmware.vsarduino.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="main.c" />
+    <ClCompile Include="main.ino" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

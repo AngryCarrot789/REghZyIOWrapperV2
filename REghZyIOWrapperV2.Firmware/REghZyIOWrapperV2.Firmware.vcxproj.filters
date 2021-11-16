@@ -15,17 +15,8 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="packets\PacketReader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="StringBuilder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="__vm\.REghZyIOWrapper.Firmware.vsarduino.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="main.c" />
+    <ClCompile Include="main.ino">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

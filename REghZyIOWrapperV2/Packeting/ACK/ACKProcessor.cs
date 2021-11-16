@@ -145,6 +145,7 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
         }
 
         private static long SystemMillis() {
+            // return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             return Stopwatch.GetTimestamp() / TimeSpan.TicksPerMillisecond;
         }
 
@@ -164,15 +165,16 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
                 }
 
                 readAttempts++;
-                if (readAttempts > 50) { // saves constantly calling SystemMills which could be slightly slow
-                    if ((SystemMillis() - start) > 1000) {
+                if (readAttempts > 20) { // saves constantly calling SystemMills which could be slightly slow
+                    readAttempts = 0;
+                    long current = SystemMillis();
+                    if ((current - start) > 1000) {
+                        start = current;
                         if (LastSendPacket.TryGetValue(id, out T pkt)) {
                             Console.WriteLine("Did not receive after 1000ms... writing packet again");
                             this.packetSystem.EnqueuePacket(pkt);
                         }
                     }
-
-                    readAttempts = 0;
                 }
 
                 await Task.Delay(1);

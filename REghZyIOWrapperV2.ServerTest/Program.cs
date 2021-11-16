@@ -39,9 +39,9 @@ namespace REghZyIOWrapperV2.ServerTest {
                 Console.WriteLine($"Received P1DW. Pin = {p.Pin}, State = {(p.State ? "HIGH" : "LOW")}");
             }, Priority.HIGHEST);
 
-            system.RegisterListener<Packet3HardwareInfo>((p) => {
-                Console.WriteLine($"Received P3HI. Dest = {p.Destination}, Key = {p.Key}, Code = {p.Code}, Info = {p.Information}");
-            }, Priority.HIGHEST);
+            // system.RegisterListener<Packet3HardwareInfo>((p) => {
+            //     Console.WriteLine($"Received P3HI. Dest = {p.Destination}, Key = {p.Key}, Code = {p.Code}, Info = {p.Information}");
+            // }, Priority.HIGHEST);
 
             system.Start();
 
@@ -58,15 +58,15 @@ namespace REghZyIOWrapperV2.ServerTest {
             Console.WriteLine("Starting in 5 seconds...");
             Thread.Sleep(5000);
 
-            Console.WriteLine("----------------------------------------------------");
-            Console.WriteLine("Getting connection name...");
-            Task<Packet3HardwareInfo> packet1 = processor.MakeRequestAsync(new Packet3HardwareInfo(Packet3HardwareInfo.HardwareInfos.HardwareName));
-            Console.WriteLine($"Name = {packet1.Result.Information}");
-            Console.WriteLine("----------------------------------------------------");
-            Console.WriteLine("Getting COM port...");
-            Task<Packet3HardwareInfo> packet2 = processor.MakeRequestAsync(new Packet3HardwareInfo(Packet3HardwareInfo.HardwareInfos.SerialPortName));
-            Console.WriteLine($"Port = {packet2.Result.Information}");
-            Console.WriteLine("----------------------------------------------------");
+            // Console.WriteLine("----------------------------------------------------");
+            // Console.WriteLine("Getting connection name...");
+            // Task<Packet3HardwareInfo> packet1 = processor.MakeRequestAsync(new Packet3HardwareInfo(Packet3HardwareInfo.HardwareInfos.HardwareName));
+            // Console.WriteLine($"Name = {packet1.Result.Information}");
+            // Console.WriteLine("----------------------------------------------------");
+            // Console.WriteLine("Getting COM port...");
+            // Task<Packet3HardwareInfo> packet2 = processor.MakeRequestAsync(new Packet3HardwareInfo(Packet3HardwareInfo.HardwareInfos.SerialPortName));
+            // Console.WriteLine($"Port = {packet2.Result.Information}");
+            // Console.WriteLine("----------------------------------------------------");
 
             int pin = 13;
             while (true) {
@@ -74,7 +74,7 @@ namespace REghZyIOWrapperV2.ServerTest {
                 system.EnqueuePacket(new Packet1DigitalWrite(pin, true));
                 Thread.Sleep(1000);
                 Console.WriteLine($"Set pin {pin} to LOW");
-                system.EnqueuePacket(new Packet1DigitalWrite(pin--, false));
+                system.EnqueuePacket(new Packet1DigitalWrite(pin, false));
                 if (pin == 0) {
                     Console.WriteLine("Finished writing!");
                     return;
