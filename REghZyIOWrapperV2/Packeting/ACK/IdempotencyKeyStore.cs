@@ -113,7 +113,7 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
                         return false;
                     }
                     else {
-                        // it's above, so just continue ignore it
+                        // it's above, so just continue and ignore it
                         node = node.next;
                     }
                 }
@@ -190,7 +190,9 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
                 this.next = node;
             }
 
-            // Connects the prev and next together, removing this entirely
+            /// <summary>
+            /// Connects the prev and next together, removing this entirely
+            /// </summary>
             public void Remove() {
                 if (this.prev == null || this.next == null) {
                     if (this.prev == null) {
@@ -210,6 +212,11 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
                 }
             }
 
+            /// <summary>
+            /// Inserts this node inbetween the 2 other nodes (making sure to connect all of the next/prev nodes of the given nodes too)
+            /// </summary>
+            /// <param name="a"></param>
+            /// <param name="b"></param>
             public void InsertBetween(Node a, Node b) {
                 if (a != null) {
                     AddAfter(a);
