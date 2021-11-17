@@ -44,6 +44,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Connections\BaseConnection.cs" />
+    <Compile Include="Connections\Networking\SocketConnector.cs" />
+    <Compile Include="Connections\Socketing\SocketToServerConnection.cs" />
+    <Compile Include="Connections\Socketing\NetworkDataStream.cs" />
+    <Compile Include="Connections\Socketing\SocketToClientConnection.cs" />
+    <Compile Include="Connections\Socketing\SocketStream.cs" />
     <Compile Include="Packeting\ACK\ACKProcessor.cs" />
     <Compile Include="Packeting\ACK\DestinationCode.cs" />
     <Compile Include="Packeting\ACK\IdempotencyKeyStore.cs" />
@@ -60,6 +65,7 @@
     <Compile Include="Packeting\ACK\PacketACK.cs" />
     <Compile Include="Packeting\Handling\Priority.cs" />
     <Compile Include="Packeting\Handling\PriorityMap.cs" />
+    <Compile Include="Packeting\IPacketSystem.cs" />
     <Compile Include="Packeting\PacketUtils.cs" />
     <Compile Include="Packeting\ThreadPacketSystem.cs" />
     <Compile Include="Streams\DataStream.cs" />
@@ -75,6 +81,7 @@
     <Compile Include="Streams\IDataOutput.cs" />
     <Compile Include="Connections\Serial\SerialDataStream.cs" />
     <Compile Include="Utils\EnumConversion.cs" />
+    <Compile Include="Utils\KVObjectCache.cs" />
     <Compile Include="Utils\StringUtils.cs" />
   </ItemGroup>
   <ItemGroup />

@@ -4,14 +4,14 @@
     /// </summary>
     public interface IHandler {
         /// <summary>
-        /// Whether this handler can handle the given packet
+        /// Whether this handler can process the given packet
         /// </summary>
         /// <param name="packet"></param>
         /// <returns>
         /// <see langword="true"/> if it can (meaning <see cref="Handle(Packet)"/> could be executed without problem),
         /// otherwise <see langword="false"/>
         /// </returns>
-        bool CanHandle(Packet packet);
+        bool CanProcess(Packet packet);
 
         /// <summary>
         /// Handles the packet

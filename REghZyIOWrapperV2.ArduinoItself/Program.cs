@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO.Ports;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using REghZyIOWrapperV2.Arduino.ACK;
 using REghZyIOWrapperV2.Arduino.Packets;
 using REghZyIOWrapperV2.Connections.Serial;
@@ -21,7 +17,7 @@ namespace REghZyIOWrapperV2.ArduinoItself {
 
             Console.WriteLine($"Available ports: {string.Join(", ", SerialPort.GetPortNames())}");
             string port = Console.ReadLine();
-            PacketSystem system = new ThreadPacketSystem(new SerialConnection(port));
+            ThreadPacketSystem system = new ThreadPacketSystem(new SerialConnection(port));
 
             ACKProcessor<Packet3HardwareInfo> processor = new ACKProcessor3HardwareInfo(system, (info) => {
                 switch (info) {
@@ -64,7 +60,7 @@ namespace REghZyIOWrapperV2.ArduinoItself {
             Thread.Sleep(5000);
             Console.WriteLine("Polling packets...");
             while (true) {
-                if (system.HandleNextPackets(5) == 0) {
+                if (system.HandleReadPackets(5) == 0) {
                     Thread.Sleep(1);
                 }
             }

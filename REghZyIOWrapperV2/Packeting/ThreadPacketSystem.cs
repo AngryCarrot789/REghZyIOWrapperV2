@@ -1,13 +1,7 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using REghZyIOWrapperV2.Connections;
 using REghZyIOWrapperV2.Packeting.Exceptions;
-using REghZyIOWrapperV2.Packeting.Handling;
 
 namespace REghZyIOWrapperV2.Packeting {
     /// <summary>
@@ -36,6 +30,16 @@ namespace REghZyIOWrapperV2.Packeting {
 
         private int readCount;
         private int sendCount;
+
+        /// <summary>
+        /// Invoked when a packet failed to be read
+        /// </summary>
+        public Action<PacketException> OnReadFailure { get; set; }
+
+        /// <summary>
+        /// Invoked when a packet failed to be written
+        /// </summary>
+        public Action<PacketException> OnWriteFailure { get; set; }
 
         /// <summary>
         /// The number of packets that the write thread should try to send each time
@@ -103,6 +107,9 @@ namespace REghZyIOWrapperV2.Packeting {
             };
 
             this.writeCount = writeCount;
+
+            this.OnWriteFailure = OnSendException;
+            this.OnReadFailure = OnReadException;
         }
 
         /// <summary>
@@ -110,6 +117,18 @@ namespace REghZyIOWrapperV2.Packeting {
         /// </summary>
         public override void Start() {
             base.Start();
+            StartThreads();
+        }
+
+        /// <summary>
+        /// Fully stops both the reader and writer threads. They cannot be restarted!
+        /// </summary>
+        public override void Stop() {
+            StopThreads();
+            base.Stop();
+        }
+
+        public void StartThreads() {
             this.shouldRun = true;
             this.canRead = true;
             this.canSend = true;
@@ -117,16 +136,31 @@ namespace REghZyIOWrapperV2.Packeting {
             this.sendThread.Start();
         }
 
-        /// <summary>
-        /// Fully stops both the reader and writer threads. They cannot be restarted!
-        /// </summary>
-        public override void Stop() {
+        public void StopThreads() {
             this.shouldRun = false;
             this.canRead = false;
             this.canSend = false;
             this.readThread.Join();
             this.sendThread.Join();
-            base.Stop();
+        }
+
+        private static void OnSendException(PacketException e) {
+            Console.WriteLine("Failed to write packet!");
+            WriteException(e);
+        }
+
+        private static void OnReadException(PacketException e) {
+            Console.WriteLine("Failed to read packet!");
+            WriteException(e);
+        }
+
+        private static void WriteException(Exception e) {
+            Console.WriteLine($"{e.GetType().Name}: {e.Message}");
+            Console.WriteLine(e.StackTrace);
+            while ((e = e.InnerException) != null) {
+                Console.WriteLine($"Caused by {e.GetType().Name}: {e.Message}");
+                Console.WriteLine(e.StackTrace);
+            }
         }
 
         private void ReadMain() {
@@ -135,23 +169,16 @@ namespace REghZyIOWrapperV2.Packeting {
                     while (this.canRead) {
                         if (ReadNextPacket()) {
                             this.readCount++;
-                            continue;
                         }
                         else {
                             Thread.Sleep(1);
                         }
                     }
                 }
-                catch(PacketException e) {
-                    // Console.WriteLine("Failed to read packet!");
-                    // Exception ex = e;
-                    // while(ex != null) {
-                    //     Console.WriteLine(ex.Message);
-                    //     Console.WriteLine(ex.StackTrace);
-                    //     ex = ex.InnerException;
-                    // }
-
-                    throw e;
+                catch (PacketException e) {
+                    if (this.OnReadFailure != null) {
+                        this.OnReadFailure(e);
+                    }
                 }
 
                 // A big wait time, because it's very unlikely that the ability to read packets
@@ -167,21 +194,16 @@ namespace REghZyIOWrapperV2.Packeting {
                         int write = WriteNextPackets(this.writeCount);
                         if (write == 0) {
                             Thread.Sleep(1);
-                            continue;
                         }
-
-                        this.sendCount += write;
+                        else {
+                            this.sendCount += write;
+                        }
                     }
                 }
                 catch (PacketException e) {
-                    // Console.WriteLine("Failed to write packet!", e);
-                    // Exception ex = e;
-                    // while (ex != null) {
-                    //     Console.WriteLine(ex.Message);
-                    //     Console.WriteLine(ex.StackTrace);
-                    //     ex = ex.InnerException;
-                    // }
-                    throw e;
+                    if (this.OnWriteFailure != null) {
+                        this.OnWriteFailure(e);
+                    }
                 }
 
                 // A big wait time, because it's very unlikely that the ability to

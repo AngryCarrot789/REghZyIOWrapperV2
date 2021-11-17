@@ -18,7 +18,10 @@ namespace REghZyIOWrapperV2.Streams {
 
         public override long Length => stream.Length;
 
-        public override long Position { get => stream.Position; set => stream.Position = value; }
+        public override long Position {
+            get => stream.Position; 
+            set => stream.Position = value;
+        }
 
         private readonly byte[] read1 = new byte[1];
 

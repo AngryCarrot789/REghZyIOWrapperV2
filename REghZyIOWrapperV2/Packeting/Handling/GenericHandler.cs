@@ -14,7 +14,7 @@ namespace REghZyIOWrapperV2.Packeting.Handling {
             this.handler = handler;
         }
 
-        public bool CanHandle(Packet packet) {
+        public bool CanProcess(Packet packet) {
             return packet.GetType().Equals(this.type);
         }
 
@@ -34,7 +34,7 @@ namespace REghZyIOWrapperV2.Packeting.Handling {
             this.handler = handler;
         }
 
-        public bool CanHandle(Packet packet) {
+        public bool CanProcess(Packet packet) {
             return packet.GetType().Equals(typeof(T));
         }
 

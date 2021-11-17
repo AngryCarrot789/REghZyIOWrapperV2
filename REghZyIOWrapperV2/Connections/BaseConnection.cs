@@ -3,13 +3,13 @@ using REghZyIOWrapperV2.Streams;
 
 namespace REghZyIOWrapperV2.Connections {
     /// <summary>
-    /// A base class for all connections
+    /// Represents a connection to a data stream, with an ability to connect and disconnect
     /// </summary>
     public abstract class BaseConnection : IDisposable {
         /// <summary>
         /// Whether this instance is being disposed or not
         /// </summary>
-        protected bool notDisposing = true;
+        protected bool isDisposed = false;
 
         /// <summary>
         /// The data stream this connection has open
@@ -54,7 +54,7 @@ namespace REghZyIOWrapperV2.Connections {
         }
 
         public virtual void Dispose() {
-            this.notDisposing = false;
+            this.isDisposed = true;
         }
     }
 }

@@ -5,7 +5,7 @@ namespace REghZyIOWrapperV2.Streams {
     /// <summary>
     /// A base object stream that is always open
     /// </summary>
-    public abstract class DataStream {
+    public abstract class DataStream : IDisposable {
         private readonly BlockingStream stream;
         private readonly DataInputStream input;
         private readonly DataOutputOutput output;
@@ -34,7 +34,7 @@ namespace REghZyIOWrapperV2.Streams {
         /// <summary>
         /// Gets the number of bytes that can be read without blocking
         /// </summary>
-        public abstract int BytesAvailable { get; }
+        public abstract long BytesAvailable { get; }
 
         public DataStream(Stream stream) {
             if (stream == null) {
@@ -57,6 +57,15 @@ namespace REghZyIOWrapperV2.Streams {
         /// </summary>
         public void Flush() {
             this.stream.Flush();
+        }
+
+        /// <summary>
+        /// Disposes the internal stream
+        /// </summary>
+        public void Dispose() {
+            this.input.Stream = null;
+            this.output.Stream = null;
+            this.stream.Dispose();
         }
     }
 }

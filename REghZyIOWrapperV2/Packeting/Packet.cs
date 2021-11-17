@@ -206,11 +206,11 @@ namespace REghZyIOWrapperV2.Packeting {
         }
 
         /// <summary>
-        /// Gets the packet creator with the given 
+        /// Reads a packet from the given data stream, using the given ID and packet length
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="length"></param>
-        /// <param name="stream"></param>
+        /// <param name="id">Packet ID</param>
+        /// <param name="length">The amount of bytes the packet needs to read</param>
+        /// <param name="stream">The data stream to read from</param>
         /// <returns></returns>
         public static Packet ReadPacketTail(byte id, ushort length, DataStream stream) {
             while (stream.BytesAvailable < length) {

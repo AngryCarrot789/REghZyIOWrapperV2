@@ -21,5 +21,11 @@
     <ClInclude Include="handlers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="pktutils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -123,7 +123,7 @@ namespace REghZyIOWrapperV2.Packeting.Handling {
         }
 
         private bool HandlePacket(IHandler handler, Packet packet) {
-            if (handler.CanHandle(packet)) {
+            if (handler.CanProcess(packet)) {
                 if (handler.Handle(packet)) {
                     return true;
                 }
