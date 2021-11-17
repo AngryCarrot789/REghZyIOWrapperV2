@@ -58,11 +58,13 @@ namespace REghZyIOWrapperV2.ServerTest {
             Console.WriteLine("Starting in 5 seconds...");
             Thread.Sleep(5000);
 
-            // Console.WriteLine("----------------------------------------------------");
-            // Console.WriteLine("Getting connection name...");
-            // Task<Packet3HardwareInfo> packet1 = processor.MakeRequestAsync(new Packet3HardwareInfo(Packet3HardwareInfo.HardwareInfos.HardwareName));
-            // Console.WriteLine($"Name = {packet1.Result.Information}");
-            // Console.WriteLine("----------------------------------------------------");
+            Console.WriteLine("----------------------------------------------------");
+            Console.WriteLine("Getting connection name...");
+            Packet3HardwareInfo packet = new Packet3HardwareInfo(Packet3HardwareInfo.HardwareInfos.HardwareName);
+            Console.WriteLine("Sending P3Hi.. len = " + (packet.GetLength() + 3));
+            Task<Packet3HardwareInfo> packet1 = processor.MakeRequestAsync(packet);
+            Console.WriteLine($"Name = {packet1.Result.Information}");
+            Console.WriteLine("----------------------------------------------------");
             // Console.WriteLine("Getting COM port...");
             // Task<Packet3HardwareInfo> packet2 = processor.MakeRequestAsync(new Packet3HardwareInfo(Packet3HardwareInfo.HardwareInfos.SerialPortName));
             // Console.WriteLine($"Port = {packet2.Result.Information}");

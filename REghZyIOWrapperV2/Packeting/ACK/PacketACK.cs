@@ -169,13 +169,13 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
                 uint key = (keyAndDestination >> 3) & IDEMPOTENCY_MAX;
                 DestinationCode code = (DestinationCode) (keyAndDestination & 0b00000111);
                 if (code == DestinationCode.ToClient) {
-                    T ack = fromServerToClientAck(DestinationCode.ClientACK, key, input, (ushort) (length - 1));
+                    T ack = fromServerToClientAck(DestinationCode.ClientACK, key, input, (ushort) (length - 4));
                     ack.Key = key;
                     ack.Destination = DestinationCode.ClientACK;
                     return ack;
                 }
                 else if (code == DestinationCode.ClientACK || code == DestinationCode.ToServer) {
-                    T ack = fromClientToServer(DestinationCode.ToServer, key, input, (ushort) (length - 1));
+                    T ack = fromClientToServer(DestinationCode.ToServer, key, input, (ushort) (length - 4));
                     ack.Key = key;
                     ack.Destination = DestinationCode.ToServer;
                     return ack;
@@ -187,7 +187,7 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
         }
 
         public sealed override ushort GetLength() {
-            return (ushort) (1 + GetLengthACK());
+            return (ushort) (4 + GetLengthACK());
         }
 
         public sealed override void Write(IDataOutput output) {

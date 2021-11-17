@@ -209,6 +209,9 @@ namespace REghZyIOWrapperV2.Streams {
                                 throw new EndOfStreamException("Failed to read 8 bytes for 4 chars (in unknown string len, read " + i + " so far)");
                             }
 
+                            byte c1 = (byte) (b[0] << 8);
+                            byte c2 = b[1];
+
                             chars[i + 0] = ((char) (ushort) ((b[0] << 8) + (b[1] << 0)));
                             chars[i + 1] = ((char) (ushort) ((b[2] << 8) + (b[3] << 0)));
                             chars[i + 2] = ((char) (ushort) ((b[4] << 8) + (b[5] << 0)));

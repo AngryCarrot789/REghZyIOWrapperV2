@@ -15,8 +15,11 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.ino">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <None Include="REghZyIOWrapperV2.Firmware.ino" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="handlers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
