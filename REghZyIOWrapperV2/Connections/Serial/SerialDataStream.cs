@@ -10,7 +10,7 @@ namespace REghZyIOWrapperV2.Connections.Serial {
 
         public SerialPort Port { get => this.port; }
 
-        public override long BytesAvailable => this.port.BytesToRead;
+        public override long BytesAvailable => (long)this.port.BytesToRead;
 
         public SerialDataStream(SerialPort port) : base(port.BaseStream) {
             this.port = port;

@@ -1,39 +1,32 @@
 ﻿namespace REghZyIOWrapperV2.Packeting.ACK {
     /// <summary>
-    /// The server creates <see cref="ToClient"/> and sends it to the client
+    /// The client creates <see cref="ToServer"/> and sends it to the server
     /// <para>
-    /// The client receives the raw packet data, and constructs an acknowledgement (<see cref="ClientACK"/>) 
-    /// packet which it processes internally (<see cref="ACKProcessor{T}.OnProcessPacketToClientACK(T)"/>) 
-    /// and then creates a packet with <see cref="ToServer"/>, fills in the relevent information, and sends it back to the server
+    /// The server receives the raw packet data (with the code <see cref="ToServer"/>), 
+    /// and constructs an acknowledgement (<see cref="ServerACK"/>) packet which it processes 
+    /// internally (<see cref="ACKProcessor{T}.OnProcessPacketToServerACK(T)"/>) 
+    /// and then creates a packet with <see cref="ToClient"/>, fills in the relevent 
+    /// information, and sends it back to the client
     /// </para>
     /// <para>
-    /// The server receives that and processes it (<see cref="ACKProcessor{T}.OnProcessPacketToServer(T)"/>)
+    /// The client receives that and processes it (<see cref="ACKProcessor{T}.OnProcessPacketToClient(T)"/>)
     /// </para>
     /// </summary>
-    public enum DestinationCode {
+    public enum DestinationCode : byte {
         /// <summary>
-        /// This packet was sent from the server to the client and the client receives it. 
-        /// Usually, a client-side packet instance won't contain this destination code
-        /// <para>
-        /// This means the packet hasn't gone anywere yet, the server is still processing, and will soon send it to them
-        /// </para>
+        /// This code should be use client side only. The server receives the
+        /// ACK packet, and reads the raw bytes for the destination code
         /// </summary>
-        ToClient = 1,
+        ToServer = 0b0001,
 
         /// <summary>
-        /// This packet was sent from the server and received by the client, and the client is processing the packet instance
-        /// <para>
-        /// This means the packet has gone from us, to them, and they are processing it
-        /// </para>
+        /// This packet was sent from the server to the client, and is being processed by the client
         /// </summary>
-        ClientACK = 2,
+        ToClient = 0b0010,
 
         /// <summary>
-        /// This packet was sent from the client to the server, and is processed by the server
-        /// <para>
-        /// This usually means, the packet has gone from us, to them, and back to us
-        /// </para>
+        /// This packet was sent from the client and received by the server, and the server is processing the packet instance
         /// </summary>
-        ToServer = 3,
+        ServerACK = 0b0100,
     }
 }

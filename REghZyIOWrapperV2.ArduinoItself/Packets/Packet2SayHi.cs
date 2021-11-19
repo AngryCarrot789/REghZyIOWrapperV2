@@ -11,11 +11,18 @@ namespace REghZyIOWrapperV2.ArduinoItself.Packets {
         }
 
         static Packet2SayHi() {
-            RegisterPacket(2, (input, len) => { return new Packet2SayHi(PacketUtils.ReadStringWL(input)); });
+            RegisterPacket(2, (input, len) => { 
+                return new Packet2SayHi(len > 0 ? PacketUtils.ReadStringWL(input) : null); 
+            });
         }
 
         public override ushort GetLength() {
-            return (ushort) (this.Message == null ? 0 : Message.GetBytesWL());
+            if (this.Message == null) {
+                return 0;
+            }
+            else {
+                return (ushort) PacketUtils.GetBytesWL(this.Message);
+            }
         }
 
         public override void Write(IDataOutput output) {

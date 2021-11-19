@@ -1,8 +1,10 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Diagnostics;
 using REghZyIOWrapperV2.Packeting.Exceptions;
 using REghZyIOWrapperV2.Streams;
+using static REghZyIOWrapperV2.Packeting.ACK.PacketACK;
 
 namespace REghZyIOWrapperV2.Packeting.ACK {
     /// <summary>
@@ -56,13 +58,34 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
         // 00011111_11111111_11111111_11111111
         public const uint IDEMPOTENCY_MAX = 536_870_911;
 
+        public delegate TPacket PacketACKCreator<out TPacket>(DestinationCode dest, uint key, IDataInput input, ushort length) where TPacket : PacketACK;
+
         /// <summary>
         /// A dictionary that maps the packet type to it's next available ID. If there isn't an entry for a
         /// packet, it is added (starting at <see cref="IDEMPOTENCY_MIN"/>)
         /// </summary>
-        private static readonly Dictionary<Type, uint> TypeToNextID = new Dictionary<Type, uint>();
+        private static readonly Dictionary<Type, uint> TypeToNextID;
+        private static readonly Dictionary<Type, IdempotencyKeyStore> ServerTypeToIKS;
+        private static readonly Dictionary<Type, IdempotencyKeyStore> ClientTypeToIKS;
+        private static readonly PacketACKCreator<PacketACK>[] CreateFromClient;
+        private static readonly PacketACKCreator<PacketACK>[] CreateFromServer;
 
-        private static readonly Dictionary<Type, IdempotencyKeyStore> TypeToProcessedIDs = new Dictionary<Type, IdempotencyKeyStore>();
+        static PacketACK() {
+            TypeToNextID = new Dictionary<Type, uint>();
+            ServerTypeToIKS = new Dictionary<Type, IdempotencyKeyStore>();
+            ClientTypeToIKS = new Dictionary<Type, IdempotencyKeyStore>();
+            CreateFromClient = new PacketACKCreator<PacketACK>[256];
+            CreateFromServer = new PacketACKCreator<PacketACK>[256];
+        }
+
+        private static Dictionary<Type, IdempotencyKeyStore> GetStore(bool serverSide) {
+            if(serverSide) {
+                return ServerTypeToIKS;
+            }
+            else {
+                return ClientTypeToIKS;
+            }
+        }
 
         /// <summary>
         /// Gets the next ACK ID for a specific packet type
@@ -82,12 +105,16 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
             uint nextKey;
             if (TypeToNextID.TryGetValue(type, out nextKey)) {
                 if (nextKey == IDEMPOTENCY_MAX) {
+                    // Ran out of keys... not sure what to do next :(
+                    // Ignore comments below... 
+                    throw new Exception("Cannot get a next key; all 536 million keys have been used");
                     // for the sake of why not... just wrap around to the minimum if there are
                     // no more available IDs. realistically... this should never happen,
                     // but it's possible if the runtime is very long and a lot of ACK packets
                     // are sent
-                    nextKey = IDEMPOTENCY_MIN;
-                    TypeToProcessedIDs[type].Clear();
+                    // nextKey = IDEMPOTENCY_MIN;
+                    // ClientTypeToIKS[type].Clear();
+                    // ServerTypeToIKS[type].Clear();
                 }
                 else {
                     nextKey++;
@@ -106,20 +133,37 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
         /// <typeparam name="T"></typeparam>
         /// <param name="id"></param>
         /// <returns></returns>
-        public static bool IsHandled<T>(uint id) {
-            return TypeToProcessedIDs[typeof(T)].HasKey(id);
+        public static bool IsHandled<T>(uint id, bool serverSide) where T : PacketACK {
+            return GetStore(serverSide)[typeof(T)].HasKey(id);
         }
 
-        public static bool IsHandled(PacketACK packet) {
-            return TypeToProcessedIDs[packet.GetType()].HasKey(packet.Key);
+        public static bool IsHandled(PacketACK packet, bool serverSide) {
+            return GetStore(serverSide)[packet.GetType()].HasKey(packet.Key);
         }
 
-        public static bool SetHandled<T>(uint id) {
-            return TypeToProcessedIDs[typeof(T)].Put(id);
+        public static bool IsHandled(Type type, uint key, bool serverSide) {
+            if (typeof(PacketACK).IsAssignableFrom(type)) {
+                return GetStore(serverSide)[type].HasKey(key);
+            }
+            else {
+                throw new Exception($"Type must be of {typeof(PacketACK).Name}");
+            }
         }
 
-        public static bool SetHandled(PacketACK packet) {
-            return TypeToProcessedIDs[packet.GetType()].Put(packet.Key);
+        public static bool SetHandled<T>(uint id, bool serverSide) {
+            return GetStore(serverSide)[typeof(T)].Put(id);
+        }
+
+        public static bool SetHandled(PacketACK packet, bool serverSide) {
+            return GetStore(serverSide)[packet.GetType()].Put(packet.Key);
+        }
+
+        public static bool SetUnhandled<T>(uint id, bool serverSide) {
+            return GetStore(serverSide)[typeof(T)].Remove(id);
+        }
+
+        public static bool SetUnhandled(PacketACK packet, bool serverSide) {
+            return GetStore(serverSide)[packet.GetType()].Remove(packet.Key);
         }
 
         /// <summary>
@@ -142,7 +186,7 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
         }
 
         protected PacketACK() {
-
+            this.Destination = DestinationCode.ToServer;
         }
 
         /// <summary>
@@ -150,7 +194,7 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="id"></param>
-        /// <param name="fromServerToClientAck">
+        /// <param name="createFromClient">
         /// The creator used to create packets that get processed internally (by an ACK packet listener)
         /// <para>
         /// Param 1 = the destination code (it is automatically set after this func is invoked)
@@ -159,51 +203,101 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
         /// Param 4 = the packet's length (not including the packet or ACK header)
         /// </para>
         /// </param>
-        /// <param name="fromClientToServer"></param>
-        public static void RegisterACKPacket<T>(byte id, 
-            Func<DestinationCode, uint, IDataInput, ushort, T> fromServerToClientAck, 
-            Func<DestinationCode, uint, IDataInput, ushort, T> fromClientToServer) where T : PacketACK {
-            TypeToProcessedIDs[typeof(T)] = new IdempotencyKeyStore();
+        /// <param name="createFromServer"></param>
+        public static void RegisterACKPacket<T>(byte id, PacketACKCreator<T> createFromClient, PacketACKCreator<T> createFromServer) where T : PacketACK {
+            ServerTypeToIKS[typeof(T)] = new IdempotencyKeyStore();
+            ClientTypeToIKS[typeof(T)] = new IdempotencyKeyStore();
+            CreateFromClient[id] = createFromClient;
+            CreateFromServer[id] = createFromServer;
             RegisterPacket<T>(id, (input, length) => {
-                uint keyAndDestination = input.ReadInt();
-                uint key = (keyAndDestination >> 3) & IDEMPOTENCY_MAX;
-                DestinationCode code = (DestinationCode) (keyAndDestination & 0b00000111);
-                if (code == DestinationCode.ToClient) {
-                    T ack = fromServerToClientAck(DestinationCode.ClientACK, key, input, (ushort) (length - 4));
-                    ack.Key = key;
-                    ack.Destination = DestinationCode.ClientACK;
-                    return ack;
-                }
-                else if (code == DestinationCode.ClientACK || code == DestinationCode.ToServer) {
-                    T ack = fromClientToServer(DestinationCode.ToServer, key, input, (ushort) (length - 4));
-                    ack.Key = key;
-                    ack.Destination = DestinationCode.ToServer;
-                    return ack;
-                }
-                else {
-                    throw new PacketCreationFailure($"Invalid ACK DestinationCode '{code}' (ID = {id}, Len = {length}, Key = {key}, Full data = {keyAndDestination})");
-                }
+                return (T) CreatePacketACK(id, input, (ushort) (length - ACK_HEADER_SIZE));
             });
         }
 
+        /// <summary>
+        /// Creates a <see cref="PacketACK"/>
+        /// </summary>
+        /// <param name="id">The packet ID</param>
+        /// <param name="input">The length of </param>
+        /// <param name="length">The length of the ACK packet (not including the ACK header)</param>
+        /// <returns></returns>
+        private static PacketACK CreatePacketACK(byte id, IDataInput input, ushort length) {
+            uint keyAndDestination = input.ReadInt();
+            uint key = (keyAndDestination >> 3) & IDEMPOTENCY_MAX;
+            DestinationCode code = (DestinationCode) (keyAndDestination & 0b00000111);
+            if (code == DestinationCode.ToServer) {
+                PacketACKCreator<PacketACK> creator = CreateFromClient[id];
+                if (creator == null) {
+                    throw new Exception($"Missing creator for ID {id}");
+                }
+
+                PacketACK ack = creator(DestinationCode.ServerACK, key, input, length);
+                ack.Key = key;
+                ack.Destination = DestinationCode.ServerACK;
+                return ack;
+            }
+            else if (code == DestinationCode.ToClient) {
+                PacketACKCreator<PacketACK> creator = CreateFromServer[id];
+                if (creator == null) {
+                    throw new Exception($"Missing creator for ID {id}");
+                }
+
+                PacketACK ack = creator(DestinationCode.ToClient, key, input, length);
+                ack.Key = key;
+                ack.Destination = DestinationCode.ToClient;
+                return ack;
+            }
+            else if (code == DestinationCode.ServerACK) {
+                throw new PacketCreationFailure($"Received ACK packet with destination ServerACK (ID = {id}, Len = {length}, Key = {key}, Full data = {keyAndDestination})");
+            }
+            else {
+                throw new PacketCreationFailure($"Invalid ACK DestinationCode '{code}' (ID = {id}, Len = {length}, Key = {key}, Full data = {keyAndDestination})");
+            }
+        }
+
+        /// <summary>
+        /// This is used by an <see cref="ACKProcessor{TPacketACK}"/>, to determind if this packet has expired (meaning it has new data)
+        /// <para>
+        /// This is only used if the client has send a repeated packet to the server, and it's been 
+        /// longer than <see cref="ACKProcessor{TPacketACK}.IgnoreRepeatTime"/>. If so, this 
+        /// packet is invalidated (removed from the cache) and a new packet may be constructed
+        /// </para>
+        /// <para>
+        /// This is <see langword="false"/> by default, because there are very little reasons to have a 
+        /// cached packet expire
+        /// </para>
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool HasExpired() {
+            return false;
+        }
+
         public sealed override ushort GetLength() {
-            return (ushort) (4 + GetLengthACK());
+            DestinationCode destination = this.Destination;
+            if (destination == DestinationCode.ToServer) {
+                return (ushort) (4 + GetLengthToServer());
+            }
+            else if (destination == DestinationCode.ToClient) {
+                return (ushort) (4 + GetLengthToClient());
+            }
+            else {
+                throw new Exception("Cannot get the length of an ACK packet that isn't to the server or client");
+            }
         }
 
         public sealed override void Write(IDataOutput output) {
             DestinationCode code = this.Destination;
-            if (code == DestinationCode.ClientACK) {
-                throw new ACKException("Attempted to write ClientACK packet (Packet should've been recreated using the DestinationCode.ToServer code)");
+            if (code == DestinationCode.ServerACK) {
+                throw new ACKException($"Attempted to write {DestinationCode.ServerACK} packet (Packet should've been recreated)");
             }
-
-            if (code == DestinationCode.ToClient || code == DestinationCode.ToServer) {
+            else if (code == DestinationCode.ToServer || code == DestinationCode.ToClient) {
                 // always assuming the key is smaller than IDEMPOTENCY_MAX
                 output.WriteInt((this.Key << 3) | ((uint) code));
-                if (code == DestinationCode.ToClient) {
-                    WriteToClient(output);
-                }
-                else if (code == DestinationCode.ToServer) {
+                if (code == DestinationCode.ToServer) {
                     WriteToServer(output);
+                }
+                else if (code == DestinationCode.ToClient) {
+                    WriteToClient(output);
                 }
                 else {
                     throw new ACKException("Invalid destination code, it was not to the client or server");
@@ -218,19 +312,26 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
         /// Writes the custom data in this packet to the given <see cref="IDataOutput"/> to the client.
         /// The packet headers (ID, length, destination code + ACK ID) are written automatically
         /// </summary>
-        public abstract void WriteToClient(IDataOutput output);
+        public abstract void WriteToServer(IDataOutput output);
 
         /// <summary>
         /// Writes the custom data in this packet to the given <see cref="IDataOutput"/> to the server.
         /// The packet headers (ID, length, destination code + ACK ID) are written automatically
         /// </summary>
-        public abstract void WriteToServer(IDataOutput output);
+        public abstract void WriteToClient(IDataOutput output);
 
         /// <summary>
-        /// The length or size of this ACK packet, in bytes. This should only include custom packet 
-        /// data, not the header (id + len), nor the ACK header (destination code + ack id)
+        /// The length/size of this ACK packet being sent to the server, in bytes. 
+        /// This should only include custom packet data, not the header (id + len), nor the ACK header (destination code + ack id)
         /// </summary>
         /// <returns>A value between 0 and 65531</returns>
-        public abstract ushort GetLengthACK();
+        public abstract ushort GetLengthToServer();
+
+        /// <summary>
+        /// The length/size of this ACK packet being sent to the client, in bytes. 
+        /// This should only include custom packet data, not the header (id + len), nor the ACK header (destination code + ack id)
+        /// </summary>
+        /// <returns>A value between 0 and 65531</returns>
+        public abstract ushort GetLengthToClient();
     }
 }

@@ -82,6 +82,7 @@
     <Compile Include="Connections\Serial\SerialDataStream.cs" />
     <Compile Include="Utils\EnumConversion.cs" />
     <Compile Include="Utils\KVObjectCache.cs" />
+    <Compile Include="Utils\Logger.cs" />
     <Compile Include="Utils\StringUtils.cs" />
   </ItemGroup>
   <ItemGroup />

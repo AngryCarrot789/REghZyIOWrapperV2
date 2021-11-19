@@ -32,26 +32,23 @@ namespace REghZyIOWrapperV2.Arduino.Packets {
             });
         }
 
-        public override ushort GetLengthACK() {
-            if (this.Information == null) {
-                return 1;
-            }
-            else {
-                return (ushort) (1 + this.Information.GetBytesWL());
-            }
+        public override ushort GetLengthToServer() {
+            return 1;
         }
 
-        public override void WriteToClient(IDataOutput output) {
-            // faster to cast to a byte than to invoke multiple other methods to convert using pointers and stuff
-            output.WriteByte((byte) this.Code);
+        public override ushort GetLengthToClient() {
+            return (ushort) (1 + this.Information.GetBytesWL());
         }
 
         public override void WriteToServer(IDataOutput output) {
             // faster to cast to a byte than to invoke multiple other methods to convert using pointers and stuff
             output.WriteByte((byte) this.Code);
-            if (this.Information != null) {
-                PacketUtils.WriteStringWL(this.Information, output);
-            }
+        }
+
+        public override void WriteToClient(IDataOutput output) {
+            // faster to cast to a byte than to invoke multiple other methods to convert using pointers and stuff
+            output.WriteByte((byte) this.Code);
+            PacketUtils.WriteStringWL(this.Information, output);
         }
     }
 }

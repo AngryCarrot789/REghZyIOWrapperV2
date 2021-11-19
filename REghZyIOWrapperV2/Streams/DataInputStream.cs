@@ -162,19 +162,19 @@ namespace REghZyIOWrapperV2.Streams {
             return (char) (ushort) ((b[0] << 0) + (b[1] << 8));
         }
 
-        public string ReadString(int len) {
-            return new string(ReadChars(len));
+        public string ReadStringUTF16(int len) {
+            return new string(ReadCharsUTF16(len));
         }
 
-        public char[] ReadChars(int len) {
-            char[] chars = new char[len];
-            if (len == 0) {
+        public char[] ReadCharsUTF16(int length) {
+            char[] chars = new char[length];
+            if (length == 0) {
                 return chars;
             }
             else {
                 byte[] b = this.buffer;
                 Stream s = this.stream;
-                if (len == 1) {
+                if (length == 1) {
                     if (s.Read(b, 0, 2) != 2) {
                         throw new EndOfStreamException("Failed to read 2 bytes for a char (in string len 1)");
                     }
@@ -182,7 +182,7 @@ namespace REghZyIOWrapperV2.Streams {
                     chars[0] = (char) (ushort) ((b[0] << 8) + (b[1] << 0));
                     return chars;
                 }
-                else if (len == 2) {
+                else if (length == 2) {
                     if (s.Read(b, 0, 4) != 4) {
                         throw new EndOfStreamException("Failed to read 4 bytes for 2 chars (in string len 2)");
                     }
@@ -191,7 +191,7 @@ namespace REghZyIOWrapperV2.Streams {
                     chars[1] = (char) (ushort) ((b[2] << 8) + (b[3] << 0));
                     return chars;
                 }
-                else if (len == 3) {
+                else if (length == 3) {
                     if (s.Read(b, 0, 6) != 6) {
                         throw new EndOfStreamException("Failed to read 6 bytes for 3 chars (in string len 3)");
                     }
@@ -204,23 +204,20 @@ namespace REghZyIOWrapperV2.Streams {
                 else {
                     int i = 0;
                     while (true) {
-                        if (len > 3) {
+                        if (length > 3) {
                             if (s.Read(b, 0, 8) != 8) {
                                 throw new EndOfStreamException("Failed to read 8 bytes for 4 chars (in unknown string len, read " + i + " so far)");
                             }
-
-                            byte c1 = (byte) (b[0] << 8);
-                            byte c2 = b[1];
 
                             chars[i + 0] = ((char) (ushort) ((b[0] << 8) + (b[1] << 0)));
                             chars[i + 1] = ((char) (ushort) ((b[2] << 8) + (b[3] << 0)));
                             chars[i + 2] = ((char) (ushort) ((b[4] << 8) + (b[5] << 0)));
                             chars[i + 3] = ((char) (ushort) ((b[6] << 8) + (b[7] << 0)));
-                            len -= 4;
+                            length -= 4;
                             i += 4;
                         }
                         else {
-                            if (len == 3) {
+                            if (length == 3) {
                                 if (s.Read(b, 0, 6) != 6) {
                                     throw new EndOfStreamException("Failed to read 6 bytes for 3 chars (in unknown string len, last 3 chars, read " + i + " so far)");
                                 }
@@ -229,7 +226,7 @@ namespace REghZyIOWrapperV2.Streams {
                                 chars[i + 1] = ((char) (ushort) ((b[2] << 8) + (b[3] << 0)));
                                 chars[i + 2] = ((char) (ushort) ((b[4] << 8) + (b[5] << 0)));
                             }
-                            else if (len == 2) {
+                            else if (length == 2) {
                                 if (s.Read(b, 0, 4) != 4) {
                                     throw new EndOfStreamException("Failed to read 4 bytes for 2 chars (in unknown string len, last 2 chars, read " + i + " so far)");
                                 }
@@ -237,7 +234,91 @@ namespace REghZyIOWrapperV2.Streams {
                                 chars[i + 0] = ((char) (ushort) ((b[0] << 8) + (b[1] << 0)));
                                 chars[i + 1] = ((char) (ushort) ((b[2] << 8) + (b[3] << 0)));
                             }
-                            else if (len == 1) {
+                            else if (length == 1) {
+                                if (s.Read(b, 0, 2) != 2) {
+                                    throw new EndOfStreamException("Failed to read 2 bytes for 1 char (in unknown string len, last 1 char, read " + i + " so far)");
+                                }
+
+                                chars[i] = ((char) (ushort) ((b[0] << 8) + (b[1] << 0)));
+                            }
+
+                            return chars;
+                        }
+                    }
+                }
+            }
+        }
+
+        public char[] ReadCharsUTF8(int length) {
+            char[] chars = new char[length];
+            if (length == 0) {
+                return chars;
+            }
+            else {
+                byte[] b = this.buffer;
+                Stream s = this.stream;
+                if (length == 1) {
+                    if (s.Read(b, 0, 2) != 2) {
+                        throw new EndOfStreamException("Failed to read 2 bytes for a char (in string len 1)");
+                    }
+
+                    chars[0] = (char) (b[0] << 0);
+                    return chars;
+                }
+                else if (length == 2) {
+                    if (s.Read(b, 0, 4) != 4) {
+                        throw new EndOfStreamException("Failed to read 4 bytes for 2 chars (in string len 2)");
+                    }
+
+                    chars[0] = (char) (ushort) (b[0] << 8);
+                    chars[1] = (char) (ushort) (b[1] << 8);
+                    return chars;
+                }
+                else if (length == 3) {
+                    if (s.Read(b, 0, 6) != 6) {
+                        throw new EndOfStreamException("Failed to read 6 bytes for 3 chars (in string len 3)");
+                    }
+
+                    // cant be bothered to do the rest xd
+                    chars[0] = (char) (ushort) ((b[0] << 8) + (b[1] << 0));
+                    chars[1] = (char) (ushort) ((b[2] << 8) + (b[3] << 0));
+                    chars[2] = (char) (ushort) ((b[4] << 8) + (b[5] << 0));
+                    return chars;
+                }
+                else {
+                    int i = 0;
+                    while (true) {
+                        if (length > 3) {
+                            if (s.Read(b, 0, 8) != 8) {
+                                throw new EndOfStreamException("Failed to read 8 bytes for 4 chars (in unknown string len, read " + i + " so far)");
+                            }
+
+                            chars[i + 0] = ((char) (ushort) ((b[0] << 8) + (b[1] << 0)));
+                            chars[i + 1] = ((char) (ushort) ((b[2] << 8) + (b[3] << 0)));
+                            chars[i + 2] = ((char) (ushort) ((b[4] << 8) + (b[5] << 0)));
+                            chars[i + 3] = ((char) (ushort) ((b[6] << 8) + (b[7] << 0)));
+                            length -= 4;
+                            i += 4;
+                        }
+                        else {
+                            if (length == 3) {
+                                if (s.Read(b, 0, 6) != 6) {
+                                    throw new EndOfStreamException("Failed to read 6 bytes for 3 chars (in unknown string len, last 3 chars, read " + i + " so far)");
+                                }
+
+                                chars[i + 0] = ((char) (ushort) ((b[0] << 8) + (b[1] << 0)));
+                                chars[i + 1] = ((char) (ushort) ((b[2] << 8) + (b[3] << 0)));
+                                chars[i + 2] = ((char) (ushort) ((b[4] << 8) + (b[5] << 0)));
+                            }
+                            else if (length == 2) {
+                                if (s.Read(b, 0, 4) != 4) {
+                                    throw new EndOfStreamException("Failed to read 4 bytes for 2 chars (in unknown string len, last 2 chars, read " + i + " so far)");
+                                }
+
+                                chars[i + 0] = ((char) (ushort) ((b[0] << 8) + (b[1] << 0)));
+                                chars[i + 1] = ((char) (ushort) ((b[2] << 8) + (b[3] << 0)));
+                            }
+                            else if (length == 1) {
                                 if (s.Read(b, 0, 2) != 2) {
                                     throw new EndOfStreamException("Failed to read 2 bytes for 1 char (in unknown string len, last 1 char, read " + i + " so far)");
                                 }

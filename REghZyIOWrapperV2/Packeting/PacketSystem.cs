@@ -140,6 +140,7 @@ namespace REghZyIOWrapperV2.Packeting {
                     sent++;
                     try {
                         Packet.WritePacket(packet, output);
+                        // Console.WriteLine($"[{packet.GetType().Name}] - ID = {Packet.GetPacketID(packet)}, Len = {packet.GetLength()} (+ head = {packet.GetLength() + 3})");
                     }
                     catch (Exception e) {
                         throw new PacketException($"Failed to write packet {sent} of {count}, with ID {Packet.GetPacketID(packet)} of type {packet.GetType().Name}", e);
@@ -170,12 +171,12 @@ namespace REghZyIOWrapperV2.Packeting {
             while (handled != count) {
                 if (this.readQueue.TryDequeue(out Packet packet)) {
                     handled++;
-                    try {
+                    //try {
                         handler.DeliverPacket(packet);
-                    }
-                    catch (Exception e) {
-                        throw new Exception($"Failed to handle packet {handled}/{count}, with ID {Packet.GetPacketID(packet)} of type {packet.GetType().Name}", e);
-                    }
+                    // }
+                    // catch (Exception e) {
+                    //     throw new Exception($"Failed to handle packet {handled}/{count}, with ID {Packet.GetPacketID(packet)} of type {packet.GetType().Name}", e);
+                    // }
                 }
                 else {
                     return handled;

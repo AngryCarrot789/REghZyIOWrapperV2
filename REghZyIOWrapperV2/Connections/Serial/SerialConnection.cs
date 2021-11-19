@@ -16,7 +16,7 @@ namespace REghZyIOWrapperV2.Connections.Serial {
 
         public SerialConnection(string port) {
             this.port = new SerialPort(port, 9600, Parity.None, 8, StopBits.One);
-            this.port.ErrorReceived += this.Port_ErrorReceived;
+            // this.port.ErrorReceived += this.Port_ErrorReceived;
             // this.port.ReceivedBytesThreshold = 4096;
             // this.port.Handshake = Handshake.None;
             // this.port.ReadTimeout = 10000;
@@ -59,11 +59,18 @@ namespace REghZyIOWrapperV2.Connections.Serial {
             this.stream = null;
         }
 
-        public override void Dispose() {
-            base.Dispose();
+        public void ClearBuffers() {
             this.port.DiscardInBuffer();
             this.port.DiscardOutBuffer();
-            this.port.Close();
+        }
+
+        public override void Dispose() {
+            base.Dispose();
+            if (this.port.IsOpen) {
+                ClearBuffers();
+                this.port.Close();
+            }
+
             this.port.Dispose();
         }
     }

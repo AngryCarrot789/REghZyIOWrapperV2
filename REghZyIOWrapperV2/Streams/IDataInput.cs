@@ -118,18 +118,29 @@ namespace REghZyIOWrapperV2.Streams {
         /// <summary>
         /// Reads the given number of characters, and joins them into a string
         /// <para>
-        /// Invoking this is the exact same as invoking <see cref="ReadChars(int)"/>, only passing the char array into the string's constructor
+        /// Invoking this is the exact same as invoking <see cref="ReadCharsUTF16(int)"/>, only passing the char array into the string's constructor
         /// </para>
         /// </summary>
-        /// <param name="len">The number of characters to read</param>
+        /// <param name="length">The number of characters to read</param>
         /// <returns></returns>
-        string ReadString(int len);
+        string ReadStringUTF16(int length);
 
         /// <summary>
-        /// Reads the given number of characters into a character array
+        /// Reads the given number of characters into a character array. This reads UTF16 chars, so 
+        /// each character is 2 bytes, meaning, reading 10 chars will read 20 bytes
         /// </summary>
-        /// <param name="len"></param>
+        /// <param name="length"></param>
         /// <returns></returns>
-        char[] ReadChars(int len);
+        char[] ReadCharsUTF16(int length);
+
+        /// <summary>
+        /// Reads the given number of characters into a character array. This reads UTF8 chars, so 
+        /// each character is 1 bytes, meaning, reading 10 chars will read 10 bytes
+        /// </summary>
+        /// <param name="length">The number of chars (and therefore bytes) to read</param>
+        /// <returns>
+        /// An array with the exact same size of the given length
+        /// </returns>
+        char[] ReadCharsUTF8(int length);
     }
 }

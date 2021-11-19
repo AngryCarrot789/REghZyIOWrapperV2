@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using REghZyIOWrapperV2.Packeting.ACK;
 using REghZyIOWrapperV2.Packeting.Exceptions;
 using REghZyIOWrapperV2.Streams;
 
@@ -18,12 +19,14 @@ namespace REghZyIOWrapperV2.Packeting {
         // byte 2 and 3 (as a ushort) = Packet Length
         protected const uint HEADER_SIZE = 3;
 
+        public delegate TPacket PacketCreator<out TPacket>(IDataInput input, ushort length) where TPacket : Packet;
+
         /// <summary>
         /// An array of packet creators (taking the data input and the received packet 
         /// length (not including header length)) and returns a packet instance
         /// <para>Index is the packet ID</para>
         /// </summary>
-        private static readonly Func<IDataInput, ushort, Packet>[] PacketCreators;
+        private static readonly PacketCreator<Packet>[] PacketCreators;
 
         /// <summary>
         /// A dictionary that maps the ID of a packet to the type of packet (e.g 0 = typeof(Packet0HardwareInfo))
@@ -36,7 +39,7 @@ namespace REghZyIOWrapperV2.Packeting {
         private static readonly Dictionary<Type, byte> PacketTypeToId;
 
         static Packet() {
-            PacketCreators = new Func<IDataInput, ushort, Packet>[255];
+            PacketCreators = new PacketCreator<Packet>[256];
             PacketIdToType = new Dictionary<byte, Type>();
             PacketTypeToId = new Dictionary<Type, byte>();
         }
@@ -108,7 +111,7 @@ namespace REghZyIOWrapperV2.Packeting {
         /// <param name="id">The packet ID is being registered</param>
         /// <param name="creator">The function that creates the packet, or null if one isn't needed</param>
         /// <typeparam name="T">The type of packet that is being registered</typeparam>
-        protected static void RegisterPacket<T>(byte id, Func<IDataInput, ushort, T> creator) where T : Packet {
+        protected static void RegisterPacket<T>(byte id, PacketCreator<T> creator) where T : Packet {
             Type type = typeof(T);
             if (type == typeof(Packet)) {
                 throw new Exception("Packet type cannot be the base abstract Packet type");
@@ -217,7 +220,7 @@ namespace REghZyIOWrapperV2.Packeting {
                 Thread.Sleep(1);
             }
 
-            Func<IDataInput, ushort, Packet> creator = PacketCreators[id];
+            PacketCreator<Packet> creator = PacketCreators[id];
             if (creator == null) {
                 stream.Input.Read(new byte[length], 0, length);
                 throw new PacketException($"Missing packet creator for id {id}");

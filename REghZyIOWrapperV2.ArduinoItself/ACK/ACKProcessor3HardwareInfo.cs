@@ -11,18 +11,13 @@ namespace REghZyIOWrapperV2.Arduino.ACK {
             this.GetInfoCallback = getInfoCallback;
         }
 
-        // Sends a request for the given info, and returns the request ID
-        public uint SendRequest(Packet3HardwareInfo.HardwareInfos info) {
-            return SendRequest(new Packet3HardwareInfo(info));
-        }
-
-        protected override bool OnProcessPacketToClientACK(Packet3HardwareInfo packet) {
-            string info = this.GetInfoCallback(packet.Code);
-            SendBackFromACK(packet, new Packet3HardwareInfo(packet.Code, info));
+        protected override bool OnProcessPacketToClient(Packet3HardwareInfo packet) {
             return true;
         }
 
-        protected override bool OnProcessPacketToServer(Packet3HardwareInfo packet) {
+        protected override bool OnProcessPacketToServerACK(Packet3HardwareInfo packet) {
+            string info = this.GetInfoCallback(packet.Code);
+            SendBackFromACK(packet, new Packet3HardwareInfo(packet.Code, info));
             return true;
         }
     }

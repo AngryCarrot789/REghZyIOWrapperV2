@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace REghZyIOWrapperV2.Packeting.ACK {
@@ -127,17 +128,66 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
             }
         }
 
-        // literally cant be bothered to add a remove RemoveKey function because
-        // it would take ages to make haha
 
-        public IEnumerable<uint> GetEnumerator() {
+        // [1-4] [7-20] [45-50]
+        // Removing 11, goes to
+        // [1-4] [7-10] [12-20] [45-50]
+        // 
+        // [1-4] [7-20] [45-50]
+        // Removing 20, goes to
+        // [1-4] [7-19] [45-50]
+        public bool Remove(uint key) {
+            if (key > this.highest) {
+                return false;
+            }
+
             Node node = this.first;
-            while(node != null) {
-                for(uint i = node.range.min, end = node.range.max + 1; i < end; i++) {
-                    yield return i;
+            Node prev = node;
+            Range range = node.range;
+            while (true) {
+                if (range.IsBetween(key)) {
+                    if (key == range.max) {
+                        node.range.DecrMax();
+                        return true;
+                    }
+                    else if (key == range.min) {
+                        node.range.IncrMin();
+                        return true;
+                    }
+                    else {
+                        node.range.max = (key - 1);
+                        Node newNode = new Node();
+                        newNode.range = new Range(key + 1, range.max);
+                        newNode.InsertAfter(node);
+                        return true;
+                    }
                 }
+                else if (range.IsAbove(key)) {
+                    prev = node;
+                    node = node.next;
+                    if (node == null) {
+                        return false;
+                    }
+                    else {
+                        range = node.range;
+                    }
+                }
+                else if (range.IsBelow(key)) {
+                    if (node.prev == prev) {
+                        return false;
+                    }
 
-                node = node.next;
+                    prev = node;
+                    node = node.prev;
+                    if (node == null) {
+                        return false;
+                    }
+
+                    range = node.range;
+                }
+                else {
+                    throw new Exception("What.....");
+                }
             }
         }
 
@@ -151,6 +201,20 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
 
             this.first.Invalidate();
             this.first.range = new Range(0);
+        }
+
+        // literally cant be bothered to add a remove RemoveKey function because
+        // it would take ages to make haha
+
+        public IEnumerable<uint> GetEnumerator() {
+            Node node = this.first;
+            while(node != null) {
+                for(uint i = node.range.min, end = node.range.max + 1; i < end; i++) {
+                    yield return i;
+                }
+
+                node = node.next;
+            }
         }
 
         // [] --- [] --- []
@@ -267,12 +331,20 @@ namespace REghZyIOWrapperV2.Packeting.ACK {
                 this.max = max;
             }
 
+            public void IncrMin() {
+                this.min++;
+            }
+
             public void IncrMax() {
                 this.max++;
             }
 
             public void DecrMin() {
                 this.min--;
+            }
+
+            public void DecrMax() {
+                this.max--;
             }
 
             public void SetMin(uint min) {
