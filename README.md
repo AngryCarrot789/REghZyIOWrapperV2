@@ -7,6 +7,8 @@ A more efficient of another thing i made, that uses raw data in the packets, rat
 
 ## This repo also contains 2 classes that i made: DataInputStream, and DataOutputStream :)
 
+These are basically the same as java's DataInputStream and DataOutputStream, but i've optimised these and used some unsafe code to marginally increase speed (or decreased... hopefully not)
+
 These allow you to read and write primitive data types (e.g WriteByte(), WriteLong(), etc)
 
 To solve the problem with writing strings, i created a PacketUtils class, which contains a "WriteStringWL()" method (write string with label), 
